@@ -311,47 +311,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Privacy & Terms links
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pushNamed('/privacy'),
-                        child: const Text(
-                          'Privacy Policy',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textDim,
-                            decoration: TextDecoration.underline,
-                            decorationColor: AppColors.textDim,
-                          ),
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(
-                          '·',
-                          style: TextStyle(color: AppColors.textDim, fontSize: 11),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.of(context).pushNamed('/terms'),
-                        child: const Text(
-                          'Terms of Service',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textDim,
-                            decoration: TextDecoration.underline,
-                            decorationColor: AppColors.textDim,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
                 // Banner ad pinned to bottom
                 const AdaptiveBannerAd(),
               ],
