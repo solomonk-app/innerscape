@@ -16,6 +16,7 @@ class AdService {
   static const int _maxRetries = 3;
   Completer<void>? _initCompleter;
 
+
   Future<void> waitForInit() async {
     if (_initCompleter != null) await _initCompleter!.future;
   }
