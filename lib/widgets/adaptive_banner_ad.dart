@@ -44,7 +44,7 @@ class _AdaptiveBannerAdState extends State<AdaptiveBannerAd> {
   }
 
   // TODO: Remove this flag after taking App Store screenshots
-  static const bool _hideForScreenshots = true;
+  static const bool _hideForScreenshots = false;
 
   @override
   Widget build(BuildContext context) {
