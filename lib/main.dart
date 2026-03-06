@@ -53,7 +53,6 @@ class FeelongApp extends StatelessWidget {
       title: 'Feelong',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      initialRoute: '/',
       routes: {
         '/': (_) => const HomeScreen(),
         '/privacy': (_) => const PrivacyPolicyScreen(),
