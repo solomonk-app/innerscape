@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/notification_service.dart';
@@ -180,9 +181,12 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: kIsWeb ? 480 : double.infinity),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                           // Illustration
                           FadeInDown(
                             duration: const Duration(milliseconds: 500),
@@ -514,6 +518,8 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                             ),
                           ),
                         ],
+                      ),
+                        ),
                       ),
                     ),
                   ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:intl/intl.dart';
@@ -259,10 +260,13 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
 
     final dateFormat = DateFormat('MMM d, yyyy');
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      itemCount: _capsules.length,
-      itemBuilder: (ctx, idx) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: kIsWeb ? 480 : double.infinity),
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          itemCount: _capsules.length,
+          itemBuilder: (ctx, idx) {
         final capsule = _capsules[idx];
         final mood =
             moodOptions.firstWhere((m) => m.value == capsule.moodAtCreation);
@@ -335,19 +339,24 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
           ),
         );
       },
+        ),
+      ),
     );
   }
 
   Widget _buildComposeView(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FadeInDown(
-            duration: const Duration(milliseconds: 400),
-            child: Text(
-              'Dear Future Me...',
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: kIsWeb ? 480 : double.infinity),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FadeInDown(
+                duration: const Duration(milliseconds: 400),
+                child: Text(
+                  'Dear Future Me...',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontStyle: FontStyle.italic,
                     color: AppColors.warmGold,
@@ -501,6 +510,8 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
           const SizedBox(height: 40),
         ],
       ),
+        ),
+      ),
     );
   }
 
@@ -560,11 +571,14 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Date info
-          FadeInDown(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: kIsWeb ? 480 : double.infinity),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date info
+              FadeInDown(
             duration: const Duration(milliseconds: 400),
             child: Row(
               children: [
@@ -674,6 +688,8 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
 
           const SizedBox(height: 40),
         ],
+      ),
+        ),
       ),
     );
   }
