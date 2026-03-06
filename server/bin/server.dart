@@ -49,11 +49,20 @@ void main() async {
     defaultDocument: 'index.html',
   );
 
-  // Cascade: try API routes first, then static files
+  // SPA fallback: serve index.html for routes that don't match a static file
+  final indexFile = File('build/web/index.html');
+  Handler spaFallback(Request request) {
+    return Response.ok(
+      indexFile.readAsStringSync(),
+      headers: {'Content-Type': 'text/html'},
+    );
+  }
+
+  // Cascade: API routes -> static files -> SPA fallback
   final handler = const Pipeline()
       .addMiddleware(logRequests())
       .addHandler(
-        Cascade().add(router.call).add(staticHandler).handler,
+        Cascade().add(router.call).add(staticHandler).add(spaFallback).handler,
       );
 
   final server = await io.serve(handler, InternetAddress.anyIPv4, port);

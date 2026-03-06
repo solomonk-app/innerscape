@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/intl.dart';
 import 'theme/app_theme.dart';
 import 'models/mood_entry.dart';
@@ -19,9 +20,12 @@ import 'screens/time_capsule_screen.dart';
 import 'widgets/ambient_particles.dart';
 import 'widgets/glass_card.dart';
 import 'widgets/adaptive_banner_ad.dart';
+import 'screens/privacy_policy_screen.dart';
+import 'screens/terms_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -48,7 +52,12 @@ class InnerscapeApp extends StatelessWidget {
       title: 'Innerscape',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const HomeScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const HomeScreen(),
+        '/privacy': (_) => const PrivacyPolicyScreen(),
+        '/terms': (_) => const TermsScreen(),
+      },
     );
   }
 }
@@ -298,6 +307,47 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _buildScreen(),
+                  ),
+                ),
+
+                // Privacy & Terms links
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pushNamed('/privacy'),
+                        child: const Text(
+                          'Privacy Policy',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textDim,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.textDim,
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          '·',
+                          style: TextStyle(color: AppColors.textDim, fontSize: 11),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pushNamed('/terms'),
+                        child: const Text(
+                          'Terms of Service',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textDim,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.textDim,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
