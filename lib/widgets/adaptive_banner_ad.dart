@@ -43,8 +43,12 @@ class _AdaptiveBannerAdState extends State<AdaptiveBannerAd> {
     super.dispose();
   }
 
+  // TODO: Remove this flag after taking App Store screenshots
+  static const bool _hideForScreenshots = true;
+
   @override
   Widget build(BuildContext context) {
+    if (_hideForScreenshots) return const SizedBox.shrink();
     if (!_isLoaded || _bannerAd == null) {
       return const SizedBox.shrink();
     }

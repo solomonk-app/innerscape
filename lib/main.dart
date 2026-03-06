@@ -22,6 +22,7 @@ import 'widgets/glass_card.dart';
 import 'widgets/adaptive_banner_ad.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/terms_screen.dart';
+import 'screens/support_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +58,7 @@ class FeelongApp extends StatelessWidget {
         '/': (_) => const HomeScreen(),
         '/privacy': (_) => const PrivacyPolicyScreen(),
         '/terms': (_) => const TermsScreen(),
+        '/support': (_) => const SupportScreen(),
       },
     );
   }

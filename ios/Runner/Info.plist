@@ -4,6 +4,10 @@
 <dict>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>This identifier will be used to deliver personalized ads to you. You can change this in Settings at any time.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Feelong uses the microphone for audio features in breathing exercises.</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-8288417026402649~1362569850</string>
 	<key>SKAdNetworkItems</key>
