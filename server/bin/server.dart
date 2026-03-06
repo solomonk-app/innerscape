@@ -51,7 +51,7 @@ void main() async {
 
   // SPA fallback: serve index.html for routes that don't match a static file
   final indexFile = File('build/web/index.html');
-  Handler spaFallback(Request request) {
+  Response spaFallback(Request request) {
     return Response.ok(
       indexFile.readAsStringSync(),
       headers: {'Content-Type': 'text/html'},
