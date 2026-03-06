@@ -1,4 +1,4 @@
-package com.innerscape.app
+package com.feelong.app
 
 import io.flutter.embedding.android.FlutterActivity
 

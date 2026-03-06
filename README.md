@@ -1,4 +1,4 @@
-# 🌙 Innerscape — AI Mood Journal
+# 🌙 Feelong — AI Mood Journal
 
 A beautiful, AI-powered mood journal built with Flutter for iOS & Android.
 
@@ -34,13 +34,13 @@ The app features three main views:
 
 1. **Clone or copy the project files** into a new Flutter project:
    ```bash
-   flutter create innerscape
+   flutter create feelong
    ```
    Then replace the `lib/` folder and `pubspec.yaml` with the files provided.
 
 2. **Install dependencies:**
    ```bash
-   cd innerscape
+   cd feelong
    flutter pub get
    ```
 

@@ -52,20 +52,20 @@ class TermsScreen extends StatelessWidget {
                         const SizedBox(height: 20),
                         _sectionTitle('Acceptance of Terms'),
                         _body(
-                          'By using Innerscape ("the app"), you agree to these Terms of Service. '
+                          'By using Feelong ("the app"), you agree to these Terms of Service. '
                           'If you do not agree, please do not use the app.',
                         ),
                         const SizedBox(height: 20),
                         _sectionTitle('Description of Service'),
                         _body(
-                          'Innerscape is a mood journaling app that provides AI-powered reflections, '
+                          'Feelong is a mood journaling app that provides AI-powered reflections, '
                           'breathing exercises, wellness tips, and emotional tracking tools. The app '
                           'is provided for personal, non-commercial use.',
                         ),
                         const SizedBox(height: 20),
                         _sectionTitle('Not Medical Advice'),
                         _body(
-                          'Innerscape is a wellness tool, not a medical or mental health service. '
+                          'Feelong is a wellness tool, not a medical or mental health service. '
                           'AI-generated reflections and suggestions are not professional advice. '
                           'If you are experiencing a mental health crisis, please contact a qualified '
                           'professional or emergency services immediately.',
@@ -94,13 +94,13 @@ class TermsScreen extends StatelessWidget {
                         const SizedBox(height: 20),
                         _sectionTitle('Intellectual Property'),
                         _body(
-                          'The app design, code, and branding are the property of Innerscape. '
+                          'The app design, code, and branding are the property of Feelong. '
                           'Your journal entries and personal data remain yours.',
                         ),
                         const SizedBox(height: 20),
                         _sectionTitle('Limitation of Liability'),
                         _body(
-                          'Innerscape is provided "as is" without warranty of any kind. We are not '
+                          'Feelong is provided "as is" without warranty of any kind. We are not '
                           'liable for any damages arising from your use of the app, including but '
                           'not limited to data loss, emotional distress, or reliance on AI-generated content.',
                         ),

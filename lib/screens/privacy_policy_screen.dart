@@ -52,7 +52,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         const SizedBox(height: 20),
                         _sectionTitle('Overview'),
                         _body(
-                          'Innerscape ("we", "our", "the app") is a mood journal app that helps you '
+                          'Feelong ("we", "our", "the app") is a mood journal app that helps you '
                           'track your emotional wellbeing. We are committed to protecting your privacy.',
                         ),
                         const SizedBox(height: 20),
@@ -94,7 +94,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         const SizedBox(height: 20),
                         _sectionTitle('Children\'s Privacy'),
                         _body(
-                          'Innerscape is not intended for children under 13. We do not knowingly '
+                          'Feelong is not intended for children under 13. We do not knowingly '
                           'collect data from children.',
                         ),
                         const SizedBox(height: 20),

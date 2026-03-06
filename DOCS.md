@@ -1,8 +1,8 @@
-# Innerscape — Codebase Documentation
+# Feelong — Codebase Documentation
 
 ## Overview
 
-**Innerscape** is an AI-powered mood journal mobile app built with **Flutter/Dart**. Users track their emotional well-being through daily check-ins and receive personalized wellness insights powered by Google's Gemini AI.
+**Feelong** is an AI-powered mood journal mobile app built with **Flutter/Dart**. Users track their emotional well-being through daily check-ins and receive personalized wellness insights powered by Google's Gemini AI.
 
 **Platforms:** iOS & Android | **Lines of Code:** ~2,576 Dart | **License:** MIT
 
@@ -105,7 +105,7 @@ All data is stored locally via SharedPreferences under the key `'mood_entries'` 
 ## App Flow
 
 ```
-main() → Init notifications → InnerscapeApp → HomeScreen
+main() → Init notifications → FeelongApp → HomeScreen
                                                   │
                               ┌────────────────────┼────────────────────┐
                               ▼                    ▼                    ▼

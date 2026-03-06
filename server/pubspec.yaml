@@ -1,5 +1,5 @@
-name: innerscape_server
-description: Backend proxy for Innerscape web deployment
+name: feelong_server
+description: Backend proxy for Feelong web deployment
 publish_to: 'none'
 
 environment:

@@ -40,16 +40,16 @@ void main() async {
   await notificationService.rescheduleIfEnabled();
   await notificationService.scheduleWeeklyDigestReminder();
 
-  runApp(const InnerscapeApp());
+  runApp(const FeelongApp());
 }
 
-class InnerscapeApp extends StatelessWidget {
-  const InnerscapeApp({super.key});
+class FeelongApp extends StatelessWidget {
+  const FeelongApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Innerscape',
+      title: 'Feelong',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       initialRoute: '/',
@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Innerscape',
+                            'Feelong',
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineLarge

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: innerscape
+    name: feelong
     runtime: docker
     dockerfilePath: ./Dockerfile
     envVars:
