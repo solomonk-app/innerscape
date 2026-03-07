@@ -117,6 +117,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
+        alignment: Alignment.topLeft,
         children: [
           // Ambient glow
           Positioned(

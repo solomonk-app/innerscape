@@ -35,13 +35,29 @@ void main() async {
     ),
   );
 
-  // Initialize notifications
-  final notificationService = NotificationService();
-  await notificationService.init();
-  await notificationService.rescheduleIfEnabled();
-  await notificationService.scheduleWeeklyDigestReminder();
-
   runApp(const FeelongApp());
+
+  // Initialize notifications after first frame (non-blocking)
+  _initNotifications();
+}
+
+Future<void> _initNotifications() async {
+  try {
+    final notificationService = NotificationService();
+    await notificationService.init();
+    try {
+      await notificationService.rescheduleIfEnabled();
+    } catch (e) {
+      debugPrint('Notification reschedule error: $e');
+    }
+    try {
+      await notificationService.scheduleWeeklyDigestReminder();
+    } catch (e) {
+      debugPrint('Notification digest reminder error: $e');
+    }
+  } catch (e) {
+    debugPrint('Notification init error: $e');
+  }
 }
 
 class FeelongApp extends StatelessWidget {
@@ -136,6 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
+        alignment: Alignment.topLeft,
         children: [
           // Ambient particle system
           Positioned.fill(

@@ -9,16 +9,21 @@ class StorageService {
   static const String _capsulesKey = 'time_capsules';
   static const String _digestsKey = 'weekly_digests';
   static StorageService? _instance;
+  static Future<StorageService>? _initFuture;
   late SharedPreferences _prefs;
 
   StorageService._();
 
-  static Future<StorageService> getInstance() async {
-    if (_instance == null) {
-      _instance = StorageService._();
-      _instance!._prefs = await SharedPreferences.getInstance();
-    }
-    return _instance!;
+  static Future<StorageService> getInstance() {
+    _initFuture ??= _create();
+    return _initFuture!;
+  }
+
+  static Future<StorageService> _create() async {
+    final instance = StorageService._();
+    instance._prefs = await SharedPreferences.getInstance();
+    _instance = instance;
+    return instance;
   }
 
   // ─── Mood Entries ───

@@ -321,6 +321,7 @@ class InsightsScreen extends StatelessWidget {
                               child: SizedBox(
                                 height: 8,
                                 child: Stack(
+                                  alignment: Alignment.topLeft,
                                   children: [
                                     Container(
                                       color: AppColors.borderLight,
