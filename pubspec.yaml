@@ -24,6 +24,7 @@ dependencies:
   google_mobile_ads: ^5.3.0
   app_tracking_transparency: ^2.0.6
   just_audio: ^0.9.39
+  url_launcher: ^6.2.1
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/intl.dart';
 import 'theme/app_theme.dart';
@@ -315,6 +317,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         isActive: _currentIndex == 2,
                         onTap: () => setState(() => _currentIndex = 2),
                       ),
+                      if (kIsWeb) ...[
+                        const Spacer(),
+                        _StoreButton(
+                          icon: Icons.apple,
+                          label: 'App Store',
+                          onTap: () => launchUrl(
+                            Uri.parse('https://apps.apple.com/app/feelong-ai-mood-journal/id6744266826'),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        _StoreButton(
+                          icon: Icons.shop,
+                          label: 'Google Play',
+                          onTap: () => launchUrl(
+                            Uri.parse('https://play.google.com/store/apps/details?id=com.feelong.app'),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -523,6 +545,48 @@ class _TabButton extends StatelessWidget {
             color: isActive ? AppColors.accent : AppColors.textMuted,
             letterSpacing: 0.5,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _StoreButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.accentTranslucent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.accentBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: AppColors.accent),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.accent,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
