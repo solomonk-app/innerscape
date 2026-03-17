@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import '../services/notification_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 
@@ -54,6 +55,10 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
       await _notificationService.cancelReminder();
     }
     setState(() => _isEnabled = value);
+    AnalyticsService().logReminderChanged(
+      enabled: value,
+      time: '${_reminderTime.hour}:${_reminderTime.minute.toString().padLeft(2, '0')}',
+    );
   }
 
   Future<void> _pickTime() async {

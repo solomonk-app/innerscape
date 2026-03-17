@@ -9,6 +9,7 @@ import '../models/time_capsule.dart';
 import '../services/ai_service.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 
@@ -69,6 +70,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
 
     final storage = await StorageService.getInstance();
     await storage.saveCapsule(capsule);
+    AnalyticsService().logTimeCapsuleCreate(duration: _selectedDuration.label);
 
     // Schedule notification
     final notifService = NotificationService();
@@ -97,6 +99,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
 
   Future<void> _openCapsule(TimeCapsule capsule) async {
     if (!capsule.isUnlocked) return;
+    AnalyticsService().logTimeCapsuleOpen();
 
     setState(() {
       _openingCapsule = capsule;

@@ -7,6 +7,7 @@ import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/adaptive_banner_ad.dart';
+import '../services/analytics_service.dart';
 
 class WeeklyDigestScreen extends StatefulWidget {
   final WeeklyDigest? initialDigest;
@@ -25,6 +26,7 @@ class _WeeklyDigestScreenState extends State<WeeklyDigestScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService().logWeeklyDigestView();
     _loadDigests();
   }
 

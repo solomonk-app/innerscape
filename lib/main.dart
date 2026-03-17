@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'models/mood_entry.dart';
 import 'models/weekly_digest.dart';
@@ -13,6 +15,7 @@ import 'services/atmosphere_service.dart';
 import 'services/digest_service.dart';
 import 'services/consent_service.dart';
 import 'services/ad_service.dart';
+import 'services/analytics_service.dart';
 import 'screens/checkin_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/insights_screen.dart';
@@ -28,6 +31,9 @@ import 'screens/support_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   usePathUrlStrategy();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -71,6 +77,7 @@ class FeelongApp extends StatelessWidget {
       title: 'Feelong',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      navigatorObservers: [AnalyticsService().observer],
       routes: {
         '/': (_) => const HomeScreen(),
         '/privacy': (_) => const PrivacyPolicyScreen(),
@@ -122,6 +129,22 @@ class _HomeScreenState extends State<HomeScreen> {
       _streak = storage.calculateStreak(entries);
       _atmosphereMode = AtmosphereService.getMode(entries);
     });
+
+    // Update analytics user properties
+    String? mostCommonMood;
+    if (entries.isNotEmpty) {
+      final moodCounts = <int, int>{};
+      for (final e in entries) {
+        moodCounts[e.mood] = (moodCounts[e.mood] ?? 0) + 1;
+      }
+      final topMood = moodCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+      mostCommonMood = moodOptions.firstWhere((m) => m.value == topMood).label;
+    }
+    AnalyticsService().setUserProperties(
+      totalEntries: entries.length,
+      currentStreak: _streak,
+      mostCommonMood: mostCommonMood,
+    );
   }
 
   Future<void> _checkDigest() async {
@@ -303,19 +326,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       _TabButton(
                         label: 'Check In',
                         isActive: _currentIndex == 0,
-                        onTap: () => setState(() => _currentIndex = 0),
+                        onTap: () {
+                          setState(() => _currentIndex = 0);
+                          AnalyticsService().logScreenView('check_in');
+                        },
                       ),
                       const SizedBox(width: 6),
                       _TabButton(
                         label: 'History',
                         isActive: _currentIndex == 1,
-                        onTap: () => setState(() => _currentIndex = 1),
+                        onTap: () {
+                          setState(() => _currentIndex = 1);
+                          AnalyticsService().logScreenView('history');
+                        },
                       ),
                       const SizedBox(width: 6),
                       _TabButton(
                         label: 'Insights',
                         isActive: _currentIndex == 2,
-                        onTap: () => setState(() => _currentIndex = 2),
+                        onTap: () {
+                          setState(() => _currentIndex = 2);
+                          AnalyticsService().logScreenView('insights');
+                        },
                       ),
                       if (kIsWeb) ...[
                         const Spacer(),

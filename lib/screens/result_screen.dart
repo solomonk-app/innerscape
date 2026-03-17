@@ -7,6 +7,7 @@ import '../constants/bible_verses.dart';
 import '../models/mood_entry.dart';
 import '../services/conversation_service.dart';
 import '../services/ad_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import 'time_capsule_screen.dart';
@@ -38,6 +39,15 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isAiTyping = false;
   final _scrollController = ScrollController();
 
+  static const String _checkInCountKey = 'checkin_count_for_ads';
+  static const int _interstitialFrequency = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _incrementCheckInCount();
+  }
+
   @override
   void dispose() {
     _chatController.dispose();
@@ -45,21 +55,19 @@ class _ResultScreenState extends State<ResultScreen> {
     super.dispose();
   }
 
-  static const String _checkInCountKey = 'checkin_count_for_ads';
-  static const int _interstitialFrequency = 3;
-
-  Future<void> _onNewCheckInWithAd() async {
+  Future<void> _incrementCheckInCount() async {
     final prefs = await SharedPreferences.getInstance();
     final count = (prefs.getInt(_checkInCountKey) ?? 0) + 1;
     await prefs.setInt(_checkInCountKey, count);
 
     if (count % _interstitialFrequency == 0) {
-      await AdService().showInterstitial();
+      final shown = await AdService().showInterstitial();
+      if (shown) AnalyticsService().logInterstitialShown();
     }
-    widget.onNewCheckIn();
   }
 
   Future<void> _startConversation() async {
+    await AnalyticsService().logAiConversationStart();
     setState(() {
       _showConversation = true;
       _isAiTyping = true;
@@ -405,7 +413,7 @@ class _ResultScreenState extends State<ResultScreen> {
               width: double.infinity,
               height: 54,
               child: OutlinedButton(
-                onPressed: () => _onNewCheckInWithAd(),
+                onPressed: widget.onNewCheckIn,
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(
                     color: AppColors.accentBorder,

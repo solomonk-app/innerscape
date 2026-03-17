@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "853599875468",
+    "project_id": "feelong-f3885",
+    "storage_bucket": "feelong-f3885.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853599875468:android:6a341b2740f6cc567da6a9",
+        "android_client_info": {
+          "package_name": "com.feelong.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2UNL-vB4AHVWT_VjzmN6pNPrWhwwYpwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

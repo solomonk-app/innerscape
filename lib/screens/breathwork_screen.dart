@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
 import '../models/breathing_pattern.dart';
 import '../services/breathwork_audio_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 
 class BreathworkScreen extends StatefulWidget {
@@ -47,6 +48,10 @@ class _BreathworkScreenState extends State<BreathworkScreen>
         });
         HapticFeedback.heavyImpact();
         _audioService.stop();
+        AnalyticsService().logBreathworkComplete(
+          pattern: _pattern.name,
+          cycles: _pattern.totalCycles,
+        );
       }
     });
     _audioService.init();
@@ -92,6 +97,7 @@ class _BreathworkScreenState extends State<BreathworkScreen>
 
   void _startBreathing() {
     HapticFeedback.lightImpact();
+    AnalyticsService().logBreathworkStart(pattern: _pattern.name);
     setState(() {
       _isActive = true;
       _isComplete = false;

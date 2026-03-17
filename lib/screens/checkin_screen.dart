@@ -10,6 +10,7 @@ import '../services/bible_verse_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../services/analytics_service.dart';
 import 'result_screen.dart';
 import 'breathwork_screen.dart';
 
@@ -25,10 +26,13 @@ class CheckInScreen extends StatefulWidget {
 class _CheckInScreenState extends State<CheckInScreen> {
   int? _selectedMood;
   final _textController = TextEditingController();
+  final _customTagController = TextEditingController();
   bool _isSubmitting = false;
   late String _dailyPrompt;
   bool _hasCheckedInToday = false;
   final Set<String> _selectedTags = {};
+  final Map<String, List<String>> _customTags = {};
+  String? _addingTagForCategory;
 
   @override
   void initState() {
@@ -59,6 +63,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
       text: _textController.text.trim(),
       timestamp: DateTime.now(),
       tags: _selectedTags.toList(),
+    );
+
+    AnalyticsService().logCheckInSubmitted(
+      mood: _selectedMood!,
+      tagCount: _selectedTags.length,
+      hasJournalText: _textController.text.trim().isNotEmpty,
     );
 
     final storage = await StorageService.getInstance();
@@ -97,6 +107,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
               _selectedMood = null;
               _textController.clear();
               _selectedTags.clear();
+              _customTags.clear();
               _hasCheckedInToday = true;
             });
           },
@@ -108,9 +119,23 @@ class _CheckInScreenState extends State<CheckInScreen> {
     );
   }
 
+  void _confirmCustomTag() {
+    final tag = _customTagController.text.trim();
+    final category = _addingTagForCategory;
+    if (tag.isNotEmpty && !_selectedTags.contains(tag) && category != null) {
+      setState(() {
+        _selectedTags.add(tag);
+        _customTags.putIfAbsent(category, () => []).add(tag);
+      });
+    }
+    _customTagController.clear();
+    setState(() => _addingTagForCategory = null);
+  }
+
   @override
   void dispose() {
     _textController.dispose();
+    _customTagController.dispose();
     super.dispose();
   }
 
@@ -348,45 +373,157 @@ class _CheckInScreenState extends State<CheckInScreen> {
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
-                          children: category.tags.map((tag) {
-                            final isSelected = _selectedTags.contains(tag);
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    _selectedTags.remove(tag);
-                                  } else {
-                                    _selectedTags.add(tag);
-                                  }
-                                });
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 7),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.accentTranslucent
-                                      : AppColors.surface.withOpacity(0.4),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
+                          children: [
+                            ...category.tags.map((tag) {
+                              final isSelected = _selectedTags.contains(tag);
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedTags.remove(tag);
+                                    } else {
+                                      _selectedTags.add(tag);
+                                    }
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 7),
+                                  decoration: BoxDecoration(
                                     color: isSelected
-                                        ? AppColors.accentBorder
-                                        : AppColors.borderLight,
+                                        ? AppColors.accentTranslucent
+                                        : AppColors.surface.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.accentBorder
+                                          : AppColors.borderLight,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    tag,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSelected
+                                          ? AppColors.accent
+                                          : AppColors.textMuted,
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  tag,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isSelected
-                                        ? AppColors.accent
-                                        : AppColors.textMuted,
+                              );
+                            }),
+                            ...(_customTags[category.name] ?? []).map((tag) {
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTags.remove(tag);
+                                    _customTags[category.name]?.remove(tag);
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accentTranslucent,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: AppColors.accentBorder),
                                   ),
+                                  child: Text(
+                                    tag,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.accent,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            if (_addingTagForCategory == category.name)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 130,
+                                    height: 34,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface.withOpacity(0.6),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                          color: AppColors.accentBorder),
+                                    ),
+                                    padding: const EdgeInsets.only(
+                                        left: 12, right: 4),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            controller: _customTagController,
+                                            autofocus: true,
+                                            textInputAction:
+                                                TextInputAction.done,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: AppColors.textPrimary),
+                                            decoration: const InputDecoration(
+                                              hintText: 'Add tag...',
+                                              hintStyle: TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.textDim),
+                                              border: InputBorder.none,
+                                              isDense: true,
+                                              contentPadding: EdgeInsets.zero,
+                                            ),
+                                            onSubmitted: (_) =>
+                                                _confirmCustomTag(),
+                                            onEditingComplete:
+                                                _confirmCustomTag,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: _confirmCustomTag,
+                                          child: const Icon(Icons.check,
+                                              size: 16,
+                                              color: AppColors.accent),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () {
+                                      _customTagController.clear();
+                                      setState(() =>
+                                          _addingTagForCategory = null);
+                                    },
+                                    child: const Icon(Icons.close,
+                                        size: 18, color: AppColors.textDim),
+                                  ),
+                                ],
+                              )
+                            else
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _addingTagForCategory = category.name;
+                                    _customTagController.clear();
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                        color: AppColors.borderLight),
+                                  ),
+                                  child: const Icon(Icons.add,
+                                      size: 14, color: AppColors.textDim),
                                 ),
                               ),
-                            );
-                          }).toList(),
+                          ],
                         ),
                       ],
                     ),

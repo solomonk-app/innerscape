@@ -14,15 +14,14 @@ class AdService {
   int _interstitialRetryCount = 0;
   int _rewardedRetryCount = 0;
   static const int _maxRetries = 3;
-  Completer<void>? _initCompleter;
+  final Completer<void> _initCompleter = Completer<void>();
 
 
   Future<void> waitForInit() async {
-    if (_initCompleter != null) await _initCompleter!.future;
+    await _initCompleter.future;
   }
 
   Future<void> initialize() async {
-    _initCompleter = Completer<void>();
     await MobileAds.instance.initialize();
     MobileAds.instance.updateRequestConfiguration(
       RequestConfiguration(testDeviceIds: [
@@ -31,7 +30,7 @@ class AdService {
       ]),
     );
     debugPrint('AdService: MobileAds initialized');
-    _initCompleter!.complete();
+    _initCompleter.complete();
     loadInterstitial();
     loadRewarded();
   }
