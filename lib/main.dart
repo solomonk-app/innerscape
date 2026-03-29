@@ -355,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: Icons.apple,
                           label: 'App Store',
                           onTap: () => launchUrl(
-                            Uri.parse('https://apps.apple.com/app/feelong-ai-mood-journal/id6744266826'),
+                            Uri.parse('https://apps.apple.com/us/app/feelong/id6760197546'),
                             mode: LaunchMode.externalApplication,
                           ),
                         ),
