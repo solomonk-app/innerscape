@@ -11,6 +11,10 @@
 -keepattributes EnclosingMethod
 -keepattributes InnerClasses
 
+# Meta Audience Network (Facebook) mediation - suppress missing annotation warnings
+-dontwarn com.facebook.infer.annotation.Nullsafe$Mode
+-dontwarn com.facebook.infer.annotation.Nullsafe
+
 # Keep generic signatures for all classes used by notifications
 -keepclassmembers,allowobfuscation class * {
   @com.google.gson.annotations.SerializedName <fields>;

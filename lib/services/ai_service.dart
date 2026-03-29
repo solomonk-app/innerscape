@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:http/http.dart' as http;
 import '../models/mood_entry.dart';
 import 'package:intl/intl.dart';
@@ -172,6 +172,7 @@ class AiService {
         return _getRandomFallback();
       }
     } catch (e) {
+      debugPrint('AiService: _callGemini error: $e');
       return _getRandomFallback();
     }
   }
@@ -212,6 +213,7 @@ class AiService {
         return _getRandomFallback();
       }
     } catch (e) {
+      debugPrint('AiService: callGeminiMultiTurn error: $e');
       return _getRandomFallback();
     }
   }

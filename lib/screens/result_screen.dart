@@ -74,14 +74,22 @@ class _ResultScreenState extends State<ResultScreen> {
     });
 
     _conversationService = ConversationService(entry: widget.entry);
-    final response = await _conversationService!.startConversation();
+    try {
+      final response = await _conversationService!.startConversation();
 
-    if (!mounted) return;
-    setState(() {
-      _messages.add(_ChatMessage(text: response, isUser: false));
-      _isAiTyping = false;
-    });
-    _scrollToBottom();
+      if (!mounted) return;
+      setState(() {
+        _messages.add(_ChatMessage(text: response, isUser: false));
+        _isAiTyping = false;
+      });
+      _scrollToBottom();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isAiTyping = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not connect. Please try again.')),
+      );
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -96,18 +104,27 @@ class _ResultScreenState extends State<ResultScreen> {
     });
     _scrollToBottom();
 
-    final response = await _conversationService!.sendMessage(text);
+    try {
+      final response = await _conversationService!.sendMessage(text);
 
-    if (!mounted) return;
-    setState(() {
-      _messages.add(_ChatMessage(text: response, isUser: false));
-      _isAiTyping = false;
-    });
-    _scrollToBottom();
+      if (!mounted) return;
+      setState(() {
+        _messages.add(_ChatMessage(text: response, isUser: false));
+        _isAiTyping = false;
+      });
+      _scrollToBottom();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isAiTyping = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not connect. Please try again.')),
+      );
+    }
   }
 
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
