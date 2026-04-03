@@ -154,6 +154,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                   child: Row(
                     children: [
                       IconButton(
+                        tooltip: 'Go back',
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(
                           Icons.arrow_back_ios_rounded,
@@ -264,7 +265,8 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                                   : AppColors.borderLight,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 6),
-                              child: Row(
+                              child: MergeSemantics(
+                                child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
@@ -305,6 +307,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                                   ),
                                 ],
                               ),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -313,7 +316,10 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                           FadeInUp(
                             delay: const Duration(milliseconds: 300),
                             duration: const Duration(milliseconds: 500),
-                            child: GestureDetector(
+                            child: Semantics(
+                              button: true,
+                              label: 'Reminder time: ${_formatTime(_reminderTime)}. Tap to change',
+                              child: GestureDetector(
                               onTap: _pickTime,
                               child: GlassCard(
                                 color: AppColors.surface.withOpacity(0.5),
@@ -370,6 +376,7 @@ class _ReminderSettingsScreenState extends State<ReminderSettingsScreen> {
                                 ),
                               ),
                             ),
+                          ),
                           ),
 
                           // Permission denied warning
@@ -564,7 +571,11 @@ class _PresetChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        label: '$label, $subtitle',
+        child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
@@ -605,6 +616,7 @@ class _PresetChip extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

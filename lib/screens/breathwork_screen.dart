@@ -160,6 +160,7 @@ class _BreathworkScreenState extends State<BreathworkScreen>
               child: Row(
                 children: [
                   IconButton(
+                    tooltip: 'Go back',
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back_ios,
@@ -180,6 +181,7 @@ class _BreathworkScreenState extends State<BreathworkScreen>
                     ),
                   ),
                   IconButton(
+                    tooltip: _audioService.isMuted ? 'Unmute sound' : 'Mute sound',
                     onPressed: () {
                       setState(() => _audioService.toggleMute());
                     },
@@ -258,7 +260,11 @@ class _BreathworkScreenState extends State<BreathworkScreen>
                   child: Column(
                     children: breathingPatterns.map((p) {
                       final isSelected = p.name == _pattern.name;
-                      return GestureDetector(
+                      return Semantics(
+                        button: true,
+                        selected: isSelected,
+                        label: '${p.name} breathing pattern. ${p.description}',
+                        child: GestureDetector(
                         onTap: () => _selectPattern(p),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
@@ -315,6 +321,7 @@ class _BreathworkScreenState extends State<BreathworkScreen>
                             ],
                           ),
                         ),
+                      ),
                       );
                     }).toList(),
                   ),
@@ -352,7 +359,14 @@ class _BreathworkScreenState extends State<BreathworkScreen>
                     const SizedBox(height: 40),
 
                     // Animated breathing rings
-                    GestureDetector(
+                    Semantics(
+                      button: true,
+                      label: _isComplete
+                          ? 'Exercise complete. Tap to go back'
+                          : _isActive
+                              ? 'Tap to stop breathing exercise'
+                              : 'Tap to start ${_pattern.name} breathing exercise',
+                      child: GestureDetector(
                       onTap: _isComplete
                           ? () => Navigator.pop(context)
                           : _isActive
@@ -370,6 +384,7 @@ class _BreathworkScreenState extends State<BreathworkScreen>
                           ),
                         ),
                       ),
+                    ),
                     ),
 
                     const SizedBox(height: 40),

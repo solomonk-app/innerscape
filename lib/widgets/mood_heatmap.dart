@@ -34,7 +34,9 @@ class MoodHeatmap extends StatelessWidget {
     // Pattern analysis
     final patternText = _analyzePatterns(entries);
 
-    return GlassCard(
+    return Semantics(
+      label: 'Mood heatmap for last 3 months',
+      child: GlassCard(
       color: AppColors.surface.withOpacity(0.4),
       borderColor: AppColors.borderLight,
       padding: const EdgeInsets.all(20),
@@ -111,20 +113,27 @@ class MoodHeatmap extends StatelessWidget {
                                           ? _moodColor(dayMood.average)
                                           : AppColors.surface.withOpacity(0.3);
 
-                                      return GestureDetector(
-                                        onTap: dayMood != null
-                                            ? () => _showDayDetail(
-                                                context, date, dayMood)
+                                      return Semantics(
+                                        button: dayMood != null,
+                                        label: dayMood != null
+                                            ? '${DateFormat('MMM d').format(date)}: average mood ${dayMood.average.toStringAsFixed(1)}'
                                             : null,
-                                        child: Container(
-                                          width: cellSize,
-                                          height: 12,
-                                          margin: const EdgeInsets.only(
-                                              bottom: 2),
-                                          decoration: BoxDecoration(
-                                            color: color,
-                                            borderRadius:
-                                                BorderRadius.circular(2),
+                                        excludeSemantics: dayMood == null,
+                                        child: GestureDetector(
+                                          onTap: dayMood != null
+                                              ? () => _showDayDetail(
+                                                  context, date, dayMood)
+                                              : null,
+                                          child: Container(
+                                            width: cellSize,
+                                            height: 12,
+                                            margin: const EdgeInsets.only(
+                                                bottom: 2),
+                                            decoration: BoxDecoration(
+                                              color: color,
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                            ),
                                           ),
                                         ),
                                       );
@@ -145,31 +154,35 @@ class MoodHeatmap extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Less',
-                style: TextStyle(fontSize: 9, color: AppColors.textDim),
-              ),
-              const SizedBox(width: 4),
-              ...List.generate(6, (i) {
-                return Container(
-                  width: 10,
-                  height: 10,
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  decoration: BoxDecoration(
-                    color: _moodColor((i + 1).toDouble()),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                );
-              }),
-              const SizedBox(width: 4),
-              const Text(
-                'More',
-                style: TextStyle(fontSize: 9, color: AppColors.textDim),
-              ),
-            ],
+          Semantics(
+            label: 'Legend: colors range from low mood to high mood',
+            excludeSemantics: true,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Less',
+                  style: TextStyle(fontSize: 9, color: AppColors.textDim),
+                ),
+                const SizedBox(width: 4),
+                ...List.generate(6, (i) {
+                  return Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                    decoration: BoxDecoration(
+                      color: _moodColor((i + 1).toDouble()),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  );
+                }),
+                const SizedBox(width: 4),
+                const Text(
+                  'More',
+                  style: TextStyle(fontSize: 9, color: AppColors.textDim),
+                ),
+              ],
+            ),
           ),
 
           // Pattern text
@@ -201,6 +214,7 @@ class MoodHeatmap extends StatelessWidget {
           ],
         ],
       ),
+    ),
     );
   }
 

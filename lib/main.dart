@@ -28,6 +28,7 @@ import 'widgets/adaptive_banner_ad.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/terms_screen.dart';
 import 'screens/support_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,12 +80,50 @@ class FeelongApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       navigatorObservers: [AnalyticsService().observer],
       routes: {
-        '/': (_) => const HomeScreen(),
+        '/': (_) => const _RootNavigation(),
         '/privacy': (_) => const PrivacyPolicyScreen(),
         '/terms': (_) => const TermsScreen(),
         '/support': (_) => const SupportScreen(),
       },
     );
+  }
+}
+
+class _RootNavigation extends StatefulWidget {
+  const _RootNavigation();
+
+  @override
+  State<_RootNavigation> createState() => _RootNavigationState();
+}
+
+class _RootNavigationState extends State<_RootNavigation> {
+  bool _isLoading = true;
+  bool _showOnboarding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final storage = await StorageService.getInstance();
+    final entries = await storage.getEntries();
+    setState(() {
+      _showOnboarding = !storage.hasSeenOnboarding && entries.isEmpty;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: SizedBox.shrink(),
+      );
+    }
+    return _showOnboarding ? const OnboardingScreen() : const HomeScreen();
   }
 }
 
@@ -257,26 +296,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       if (_streak > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentTranslucent,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppColors.accentBorder,
+                        Semantics(
+                          label: '$_streak day streak',
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.accentTranslucent,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.accentBorder,
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            '\u{1F525} ${_streak}d streak',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.accent,
+                            child: Text(
+                              '\u{1F525} ${_streak}d streak',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.accent,
+                              ),
                             ),
                           ),
                         ),
                       const SizedBox(width: 8),
-                      GestureDetector(
+                      Semantics(
+                        button: true,
+                        label: 'Notification settings',
+                        child: GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
                             PageRouteBuilder(
@@ -312,6 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             size: 20,
                           ),
                         ),
+                      ),
                       ),
                     ],
                   ),
@@ -423,7 +469,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_latestDigest == null) return null;
 
     final dateFormat = DateFormat.MMMd();
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: 'View weekly digest',
+      child: GestureDetector(
       onTap: () {
         Navigator.of(context).push(
           PageRouteBuilder(
@@ -481,11 +530,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
   Widget _buildCapsuleCard() {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: 'View time capsules',
+      child: GestureDetector(
       onTap: () {
         Navigator.of(context).push(
           PageRouteBuilder(
@@ -541,6 +594,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -558,24 +612,29 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.accentTranslucent : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isActive ? AppColors.accentBorder : AppColors.borderLight,
+    return Semantics(
+      button: true,
+      selected: isActive,
+      label: '$label tab',
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.accentTranslucent : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isActive ? AppColors.accentBorder : AppColors.borderLight,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: isActive ? AppColors.accent : AppColors.textMuted,
-            letterSpacing: 0.5,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: isActive ? AppColors.accent : AppColors.textMuted,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ),
@@ -596,29 +655,33 @@ class _StoreButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.accentTranslucent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.accentBorder),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: AppColors.accent),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.accent,
-                letterSpacing: 0.5,
+    return Semantics(
+      button: true,
+      label: 'Download on $label',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.accentTranslucent,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.accentBorder),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: AppColors.accent),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.accent,
+                  letterSpacing: 0.5,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

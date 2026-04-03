@@ -127,6 +127,7 @@ class InsightsScreen extends StatelessWidget {
                 delay: Duration(milliseconds: 100 * item.key),
                 duration: const Duration(milliseconds: 500),
                 child: GlassCard(
+                  semanticLabel: '${stat['label']}: ${stat['value']}',
                   color: AppColors.surface.withOpacity(0.5),
                   borderColor: const Color(0x148B7E74),
                   padding: const EdgeInsets.all(20),
@@ -201,7 +202,9 @@ class InsightsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      ...tagAnalysis['boosters']!.map((item) => Padding(
+                      ...tagAnalysis['boosters']!.map((item) => Semantics(
+                          label: 'Mood booster: ${item['tag']}, average ${(item['avg'] as double).toStringAsFixed(1)}',
+                          child: Padding(
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Row(
                               children: [
@@ -232,6 +235,7 @@ class InsightsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ),
                           )),
                       const SizedBox(height: 14),
                     ],
@@ -246,7 +250,9 @@ class InsightsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      ...tagAnalysis['drainers']!.map((item) => Padding(
+                      ...tagAnalysis['drainers']!.map((item) => Semantics(
+                          label: 'Mood drainer: ${item['tag']}, average ${(item['avg'] as double).toStringAsFixed(1)}',
+                          child: Padding(
                             padding: const EdgeInsets.only(bottom: 6),
                             child: Row(
                               children: [
@@ -277,6 +283,7 @@ class InsightsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ),
                           )),
                     ],
                   ],
@@ -305,7 +312,9 @@ class InsightsScreen extends StatelessWidget {
                     final count =
                         entries.where((e) => e.mood == mood.value).length;
                     final pct = (count / entries.length * 100);
-                    return Padding(
+                    return Semantics(
+                      label: '${mood.label}: ${pct.toStringAsFixed(0)} percent',
+                      child: Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         children: [
@@ -361,6 +370,7 @@ class InsightsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
                     );
                   }),
                 ],

@@ -163,7 +163,10 @@ class _ResultScreenState extends State<ResultScreen> {
           // Back button
           Align(
             alignment: Alignment.centerLeft,
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: 'Go back',
+              child: GestureDetector(
               onTap: widget.onNewCheckIn,
               child: Container(
                 padding: const EdgeInsets.all(8),
@@ -178,6 +181,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   size: 18,
                 ),
               ),
+            ),
             ),
           ),
           const SizedBox(height: 20),
@@ -314,7 +318,10 @@ class _ResultScreenState extends State<ResultScreen> {
           FadeInUp(
             delay: const Duration(milliseconds: 500),
             duration: const Duration(milliseconds: 500),
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: 'Start AI conversation about this check-in',
+              child: GestureDetector(
               onTap: _startConversation,
               child: GlassCard(
                 gradient: const LinearGradient(
@@ -343,6 +350,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   ],
                 ),
               ),
+            ),
             ),
           ),
 
@@ -379,7 +387,10 @@ class _ResultScreenState extends State<ResultScreen> {
           FadeInUp(
             delay: const Duration(milliseconds: 700),
             duration: const Duration(milliseconds: 500),
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              label: 'Write a letter to your future self',
+              child: GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
                   PageRouteBuilder(
@@ -419,6 +430,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   ],
                 ),
               ),
+            ),
             ),
           ),
 
@@ -469,6 +481,7 @@ class _ResultScreenState extends State<ResultScreen> {
           child: Row(
             children: [
               IconButton(
+                tooltip: 'Go back',
                 onPressed: () {
                   setState(() => _showConversation = false);
                 },
@@ -558,19 +571,23 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _sendMessage,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.arrow_upward,
-                      color: AppColors.background,
-                      size: 20,
+                Semantics(
+                  button: true,
+                  label: 'Send message',
+                  child: GestureDetector(
+                    onTap: _sendMessage,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_upward,
+                        color: AppColors.background,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -623,7 +640,9 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Widget _buildChatBubble(_ChatMessage message) {
-    return Padding(
+    return Semantics(
+      label: '${message.isUser ? "You" : "AI"} said: ${message.text}',
+      child: Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment:
@@ -680,6 +699,7 @@ class _ResultScreenState extends State<ResultScreen> {
           if (message.isUser) const SizedBox(width: 36),
         ],
       ),
+    ),
     );
   }
 

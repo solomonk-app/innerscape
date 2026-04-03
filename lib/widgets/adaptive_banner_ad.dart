@@ -52,10 +52,13 @@ class _AdaptiveBannerAdState extends State<AdaptiveBannerAd> {
     if (!_isLoaded || _bannerAd == null) {
       return const SizedBox.shrink();
     }
-    return SizedBox(
-      width: _bannerAd!.size.width.toDouble(),
-      height: _bannerAd!.size.height.toDouble(),
-      child: AdWidget(ad: _bannerAd!),
+    return Semantics(
+      label: 'Advertisement',
+      child: SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      ),
     );
   }
 }

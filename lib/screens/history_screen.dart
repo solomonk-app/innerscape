@@ -84,7 +84,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    SizedBox(
+                    Semantics(
+                      label: 'Mood trend chart showing last ${chartData.length} entries',
+                      excludeSemantics: true,
+                      child: SizedBox(
                       height: 180,
                       child: LineChart(
                         LineChartData(
@@ -198,6 +201,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         ),
                       ),
                     ),
+                    ),
                   ],
                 ),
               ),
@@ -210,7 +214,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             return FadeInUp(
               delay: Duration(milliseconds: 50 * (item.key < 10 ? item.key : 10)),
               duration: const Duration(milliseconds: 400),
-              child: GestureDetector(
+              child: Semantics(
+                button: true,
+                label: '${mood.label} entry from ${dateFormat.format(entry.timestamp)} at ${timeFormat.format(entry.timestamp)}',
+                child: GestureDetector(
                 onTap: () => Navigator.of(context).push(
                   PageRouteBuilder(
                     pageBuilder: (_, __, ___) {
@@ -342,6 +349,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ],
                   ],
                 ),
+              ),
               ),
               ),
             );

@@ -174,7 +174,10 @@ class _CheckInScreenState extends State<CheckInScreen> {
           if (_selectedMood != null && _selectedMood! <= 3)
             FadeInDown(
               duration: const Duration(milliseconds: 400),
-              child: GestureDetector(
+              child: Semantics(
+                button: true,
+                label: 'Try a guided breathing exercise',
+                child: GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
                     PageRouteBuilder(
@@ -239,6 +242,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                   ),
                 ),
               ),
+              ),
             ),
 
           // Daily prompt
@@ -279,7 +283,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
               children: moodOptions.map((mood) {
                 final isSelected = _selectedMood == mood.value;
                 return Expanded(
-                  child: GestureDetector(
+                  child: Semantics(
+                    button: true,
+                    selected: isSelected,
+                    label: '${mood.label} mood',
+                    child: GestureDetector(
                     onTap: () => setState(() => _selectedMood = mood.value),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -329,6 +337,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       ),
                     ),
                   ),
+                  ),
                 );
               }).toList(),
             ),
@@ -376,7 +385,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
                           children: [
                             ...category.tags.map((tag) {
                               final isSelected = _selectedTags.contains(tag);
-                              return GestureDetector(
+                              return Semantics(
+                                button: true,
+                                toggled: isSelected,
+                                label: '$tag tag',
+                                child: GestureDetector(
                                 onTap: () {
                                   setState(() {
                                     if (isSelected) {
@@ -411,10 +424,14 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                     ),
                                   ),
                                 ),
+                              ),
                               );
                             }),
                             ...(_customTags[category.name] ?? []).map((tag) {
-                              return GestureDetector(
+                              return Semantics(
+                                button: true,
+                                label: 'Remove $tag tag',
+                                child: GestureDetector(
                                 onTap: () {
                                   setState(() {
                                     _selectedTags.remove(tag);
@@ -438,6 +455,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                     ),
                                   ),
                                 ),
+                              ),
                               );
                             }),
                             if (_addingTagForCategory == category.name)
@@ -481,46 +499,58 @@ class _CheckInScreenState extends State<CheckInScreen> {
                                                 _confirmCustomTag,
                                           ),
                                         ),
-                                        GestureDetector(
-                                          onTap: _confirmCustomTag,
-                                          child: const Icon(Icons.check,
-                                              size: 16,
-                                              color: AppColors.accent),
+                                        Semantics(
+                                          button: true,
+                                          label: 'Confirm custom tag',
+                                          child: GestureDetector(
+                                            onTap: _confirmCustomTag,
+                                            child: const Icon(Icons.check,
+                                                size: 16,
+                                                color: AppColors.accent),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  GestureDetector(
-                                    onTap: () {
-                                      _customTagController.clear();
-                                      setState(() =>
-                                          _addingTagForCategory = null);
-                                    },
-                                    child: const Icon(Icons.close,
-                                        size: 18, color: AppColors.textDim),
+                                  Semantics(
+                                    button: true,
+                                    label: 'Cancel custom tag',
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        _customTagController.clear();
+                                        setState(() =>
+                                            _addingTagForCategory = null);
+                                      },
+                                      child: const Icon(Icons.close,
+                                          size: 18, color: AppColors.textDim),
+                                    ),
                                   ),
                                 ],
                               )
                             else
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _addingTagForCategory = category.name;
-                                    _customTagController.clear();
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 7),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surface.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                        color: AppColors.borderLight),
+                              Semantics(
+                                button: true,
+                                label: 'Add custom tag to ${category.name}',
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _addingTagForCategory = category.name;
+                                      _customTagController.clear();
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surface.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                          color: AppColors.borderLight),
+                                    ),
+                                    child: const Icon(Icons.add,
+                                        size: 14, color: AppColors.textDim),
                                   ),
-                                  child: const Icon(Icons.add,
-                                      size: 14, color: AppColors.textDim),
                                 ),
                               ),
                           ],
@@ -638,7 +668,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                GestureDetector(
+                Semantics(
+                  button: true,
+                  link: true,
+                  label: 'Privacy Policy',
+                  child: GestureDetector(
                   onTap: () => Navigator.of(context).pushNamed('/privacy'),
                   child: const Text(
                     'Privacy Policy',
@@ -650,6 +684,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     ),
                   ),
                 ),
+                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
@@ -657,7 +692,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     style: TextStyle(color: AppColors.textDim, fontSize: 11),
                   ),
                 ),
-                GestureDetector(
+                Semantics(
+                  button: true,
+                  link: true,
+                  label: 'Terms of Service',
+                  child: GestureDetector(
                   onTap: () => Navigator.of(context).pushNamed('/terms'),
                   child: const Text(
                     'Terms of Service',
@@ -668,6 +707,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       decorationColor: AppColors.textDim,
                     ),
                   ),
+                ),
                 ),
               ],
             ),

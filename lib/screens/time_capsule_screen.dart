@@ -163,6 +163,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
               child: Row(
                 children: [
                   IconButton(
+                    tooltip: 'Go back',
                     onPressed: () {
                       if (_openingCapsule != null) {
                         setState(() => _openingCapsule = null);
@@ -189,6 +190,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                   ),
                   if (_showList && _openingCapsule == null)
                     IconButton(
+                      tooltip: 'Write new letter',
                       onPressed: () => setState(() => _showList = false),
                       icon: const Icon(
                         Icons.add,
@@ -277,7 +279,10 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
         return FadeInUp(
           delay: Duration(milliseconds: 50 * idx),
           duration: const Duration(milliseconds: 400),
-          child: GestureDetector(
+          child: Semantics(
+            button: capsule.isUnlocked,
+            label: '${capsule.isOpened ? "Opened capsule" : capsule.isUnlocked ? "Capsule ready to open" : "Locked capsule, ${capsule.timeRemainingLabel}"}, written ${dateFormat.format(capsule.createdAt)}',
+            child: GestureDetector(
             onTap: capsule.isUnlocked ? () => _openCapsule(capsule) : null,
             child: GlassCard(
               color: capsule.isUnlocked
@@ -339,6 +344,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                 ],
               ),
             ),
+          ),
           ),
         );
       },
@@ -427,7 +433,11 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                   children: CapsuleDuration.values.map((d) {
                     final isSelected = d == _selectedDuration;
                     return Expanded(
-                      child: GestureDetector(
+                      child: Semantics(
+                        button: true,
+                        selected: isSelected,
+                        label: 'Open in ${d.label}',
+                        child: GestureDetector(
                         onTap: () =>
                             setState(() => _selectedDuration = d),
                         child: AnimatedContainer(
@@ -459,6 +469,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                             ),
                           ),
                         ),
+                      ),
                       ),
                     );
                   }).toList(),

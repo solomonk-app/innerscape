@@ -8,6 +8,7 @@ class GlassCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
   final double borderRadius;
+  final String? semanticLabel;
 
   const GlassCard({
     super.key,
@@ -18,11 +19,12 @@ class GlassCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.margin = EdgeInsets.zero,
     this.borderRadius = 20,
+    this.semanticLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget result = Container(
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
@@ -33,5 +35,9 @@ class GlassCard extends StatelessWidget {
       ),
       child: child,
     );
+    if (semanticLabel != null) {
+      result = Semantics(label: semanticLabel, child: result);
+    }
+    return result;
   }
 }

@@ -8,6 +8,7 @@ class StorageService {
   static const String _entriesKey = 'mood_entries';
   static const String _capsulesKey = 'time_capsules';
   static const String _digestsKey = 'weekly_digests';
+  static const String _onboardingKey = 'has_seen_onboarding';
   static StorageService? _instance;
   static Future<StorageService>? _initFuture;
   late SharedPreferences _prefs;
@@ -121,6 +122,14 @@ class StorageService {
     digests.add(digest);
     final jsonList = digests.map((d) => d.toJson()).toList();
     await _prefs.setString(_digestsKey, jsonEncode(jsonList));
+  }
+
+  // ─── Onboarding ───
+
+  bool get hasSeenOnboarding => _prefs.getBool(_onboardingKey) ?? false;
+
+  Future<void> setOnboardingSeen() async {
+    await _prefs.setBool(_onboardingKey, true);
   }
 
   Future<bool> hasDigestForWeek(DateTime weekStart) async {
