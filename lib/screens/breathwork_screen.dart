@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/breathing_pattern.dart';
 import '../services/breathwork_audio_service.dart';
 import '../services/analytics_service.dart';
@@ -48,6 +49,7 @@ class _BreathworkScreenState extends State<BreathworkScreen>
         });
         HapticFeedback.heavyImpact();
         _audioService.stop();
+        SharedPreferences.getInstance().then((p) => p.setBool('breathwork_completed', true));
         AnalyticsService().logBreathworkComplete(
           pattern: _pattern.name,
           cycles: _pattern.totalCycles,

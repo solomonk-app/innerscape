@@ -8,9 +8,12 @@ import '../constants/bible_verses.dart';
 import '../services/ai_service.dart';
 import '../services/bible_verse_service.dart';
 import '../services/storage_service.dart';
+import '../services/challenge_service.dart';
+import '../services/analytics_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
-import '../services/analytics_service.dart';
+import '../widgets/challenge_card.dart';
+import '../models/daily_challenge.dart';
 import 'result_screen.dart';
 import 'breathwork_screen.dart';
 
@@ -33,12 +36,44 @@ class _CheckInScreenState extends State<CheckInScreen> {
   final Set<String> _selectedTags = {};
   final Map<String, List<String>> _customTags = {};
   String? _addingTagForCategory;
+  DailyChallenge? _todayChallenge;
 
   @override
   void initState() {
     super.initState();
     _dailyPrompt = (dailyPrompts..shuffle()).first;
     _checkTodayEntry();
+    _loadChallenge();
+  }
+
+  Future<void> _loadChallenge() async {
+    try {
+      final challenge = await ChallengeService().getTodayChallenge();
+      if (mounted) setState(() => _todayChallenge = challenge);
+    } catch (e) {
+      // Challenge loading is non-critical
+    }
+  }
+
+  Future<void> _completeChallenge(String? reflection) async {
+    if (_todayChallenge == null) return;
+    await ChallengeService().completeChallenge(
+      _todayChallenge!.id,
+      reflection: reflection,
+    );
+    await AnalyticsService().logChallengeCompleted(
+      challengeId: _todayChallenge!.id,
+      hasReflection: reflection != null,
+    );
+    if (mounted) {
+      setState(() {
+        _todayChallenge = _todayChallenge!.copyWith(
+          isCompleted: true,
+          reflection: reflection,
+          completedAt: DateTime.now(),
+        );
+      });
+    }
   }
 
   Future<void> _checkTodayEntry() async {
@@ -151,6 +186,19 @@ class _CheckInScreenState extends State<CheckInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+          // Daily challenge card
+          if (_todayChallenge != null)
+            FadeInDown(
+              duration: const Duration(milliseconds: 400),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: ChallengeCard(
+                  challenge: _todayChallenge!,
+                  onComplete: _completeChallenge,
+                ),
+              ),
+            ),
+
           // Today already checked in notice
           if (_hasCheckedInToday)
             FadeInDown(

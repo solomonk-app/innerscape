@@ -68,6 +68,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Future<void> _startConversation() async {
     await AnalyticsService().logAiConversationStart();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('conversation_started', true);
     setState(() {
       _showConversation = true;
       _isAiTyping = true;

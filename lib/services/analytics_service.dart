@@ -105,12 +105,69 @@ class AnalyticsService {
     await _analytics.logScreenView(screenName: screenName);
   }
 
+  // --- Achievements ---
+
+  Future<void> logAchievementEarned({
+    required String achievementId,
+    required String category,
+    required int tier,
+  }) async {
+    await _analytics.logEvent(
+      name: 'achievement_earned',
+      parameters: {
+        'achievement_id': achievementId,
+        'category': category,
+        'tier': tier,
+      },
+    );
+  }
+
+  Future<void> logAchievementGalleryView({
+    required int earnedCount,
+    required int totalCount,
+  }) async {
+    await _analytics.logEvent(
+      name: 'achievement_gallery_view',
+      parameters: {
+        'earned_count': earnedCount,
+        'total_count': totalCount,
+      },
+    );
+  }
+
+  // --- Challenges ---
+
+  Future<void> logChallengeGenerated({
+    required String source,
+    required String title,
+  }) async {
+    await _analytics.logEvent(
+      name: 'challenge_generated',
+      parameters: {'source': source, 'title': title},
+    );
+  }
+
+  Future<void> logChallengeCompleted({
+    required String challengeId,
+    required bool hasReflection,
+  }) async {
+    await _analytics.logEvent(
+      name: 'challenge_completed',
+      parameters: {
+        'challenge_id': challengeId,
+        'has_reflection': hasReflection ? 1 : 0,
+      },
+    );
+  }
+
   // --- User properties ---
 
   Future<void> setUserProperties({
     int? totalEntries,
     int? currentStreak,
     String? mostCommonMood,
+    int? achievementsEarned,
+    int? challengesCompleted,
   }) async {
     if (totalEntries != null) {
       await _analytics.setUserProperty(
@@ -128,6 +185,18 @@ class AnalyticsService {
       await _analytics.setUserProperty(
         name: 'most_common_mood',
         value: mostCommonMood,
+      );
+    }
+    if (achievementsEarned != null) {
+      await _analytics.setUserProperty(
+        name: 'achievements_earned',
+        value: achievementsEarned.toString(),
+      );
+    }
+    if (challengesCompleted != null) {
+      await _analytics.setUserProperty(
+        name: 'challenges_completed',
+        value: challengesCompleted.toString(),
       );
     }
   }

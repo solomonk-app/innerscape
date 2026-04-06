@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/mood_entry.dart';
 import '../models/weekly_digest.dart';
 import '../services/storage_service.dart';
@@ -27,6 +28,7 @@ class _WeeklyDigestScreenState extends State<WeeklyDigestScreen> {
   void initState() {
     super.initState();
     AnalyticsService().logWeeklyDigestView();
+    SharedPreferences.getInstance().then((p) => p.setBool('digest_viewed', true));
     _loadDigests();
   }
 

@@ -9,6 +9,8 @@ import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'models/mood_entry.dart';
 import 'models/weekly_digest.dart';
+import 'models/achievement.dart';
+import 'models/daily_challenge.dart';
 import 'services/storage_service.dart';
 import 'services/notification_service.dart';
 import 'services/atmosphere_service.dart';
@@ -16,15 +18,19 @@ import 'services/digest_service.dart';
 import 'services/consent_service.dart';
 import 'services/ad_service.dart';
 import 'services/analytics_service.dart';
+import 'services/achievement_service.dart';
+import 'services/challenge_service.dart';
 import 'screens/checkin_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/insights_screen.dart';
 import 'screens/reminder_settings_screen.dart';
 import 'screens/weekly_digest_screen.dart';
 import 'screens/time_capsule_screen.dart';
+import 'screens/achievement_gallery_screen.dart';
 import 'widgets/ambient_particles.dart';
 import 'widgets/glass_card.dart';
 import 'widgets/adaptive_banner_ad.dart';
+import 'widgets/achievement_celebration.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/terms_screen.dart';
 import 'screens/support_screen.dart';
@@ -141,6 +147,11 @@ class _HomeScreenState extends State<HomeScreen> {
   AtmosphereMode _atmosphereMode = AtmosphereMode.neutral;
   WeeklyDigest? _latestDigest;
   bool _digestChecked = false;
+  List<AchievementDefinition> _newAchievements = [];
+  int _earnedAchievementCount = 0;
+  List<DailyChallenge> _challenges = [];
+  int _challengeWeekCompleted = 0;
+  int _challengeTotalCompleted = 0;
 
   @override
   void initState() {
@@ -163,11 +174,44 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadEntries() async {
     final storage = await StorageService.getInstance();
     final entries = await storage.getEntries();
+    final capsules = await storage.getCapsules();
+    final streak = storage.calculateStreak(entries);
     setState(() {
       _entries = entries;
-      _streak = storage.calculateStreak(entries);
+      _streak = streak;
       _atmosphereMode = AtmosphereService.getMode(entries);
     });
+
+    // Evaluate achievements
+    final newAchievements = await AchievementService().evaluateAndAward(
+      entries: entries,
+      streak: streak,
+      capsules: capsules,
+    );
+    final earned = await AchievementService().getEarned();
+
+    // Log new achievements
+    for (final a in newAchievements) {
+      AnalyticsService().logAchievementEarned(
+        achievementId: a.id,
+        category: a.category.name,
+        tier: a.tier.index,
+      );
+    }
+
+    // Load challenge stats
+    final challenges = await storage.getChallenges();
+    final challengeStats = ChallengeService().getStats(challenges);
+
+    if (mounted) {
+      setState(() {
+        _newAchievements = newAchievements;
+        _earnedAchievementCount = earned.length;
+        _challenges = challenges;
+        _challengeWeekCompleted = challengeStats['weekCompleted'] ?? 0;
+        _challengeTotalCompleted = challengeStats['totalCompleted'] ?? 0;
+      });
+    }
 
     // Update analytics user properties
     String? mostCommonMood;
@@ -183,6 +227,8 @@ class _HomeScreenState extends State<HomeScreen> {
       totalEntries: entries.length,
       currentStreak: _streak,
       mostCommonMood: mostCommonMood,
+      achievementsEarned: earned.length,
+      challengesCompleted: challengeStats['totalCompleted'],
     );
   }
 
@@ -208,6 +254,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _entries = [];
       _streak = 0;
       _atmosphereMode = AtmosphereMode.neutral;
+      _earnedAchievementCount = 0;
+      _challenges = [];
+      _challengeWeekCompleted = 0;
+      _challengeTotalCompleted = 0;
     });
   }
 
@@ -434,6 +484,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
+          // Achievement celebration overlay (on top of everything)
+          if (_newAchievements.isNotEmpty)
+            Positioned.fill(
+              child: AchievementCelebration(
+                achievements: _newAchievements,
+                onDismiss: () async {
+                  await AchievementService().markAllSeen();
+                  if (mounted) setState(() => _newAchievements = []);
+                },
+              ),
+            ),
+
         ],
       ),
     );
@@ -459,6 +521,8 @@ class _HomeScreenState extends State<HomeScreen> {
           onClearData: _clearAllData,
           digestCard: _buildDigestCard(),
           capsuleCard: _buildCapsuleCard(),
+          achievementCard: _buildAchievementCard(),
+          challengeCard: _buildChallengeStatsCard(),
         );
       default:
         return const SizedBox();
@@ -595,6 +659,135 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     ),
+    );
+  }
+
+  Widget _buildAchievementCard() {
+    return Semantics(
+      button: true,
+      label: 'View achievements gallery',
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const AchievementGalleryScreen(),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+              transitionDuration: const Duration(milliseconds: 400),
+            ),
+          );
+        },
+        child: GlassCard(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0x14FFD700),
+              Color(0x0FC4A882),
+            ],
+          ),
+          borderColor: const Color(0x26FFD700),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Text('\u{1F3C6}', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Achievements',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFFFFD700),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '$_earnedAchievementCount of ${allAchievements.length} earned',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textDim,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFFFFD700),
+                size: 14,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget? _buildChallengeStatsCard() {
+    if (_challengeTotalCompleted == 0 && _challenges.isEmpty) return null;
+
+    return GlassCard(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0x1A7BC47F),
+          Color(0x14A5C9A0),
+        ],
+      ),
+      borderColor: const Color(0x267BC47F),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('\u{1F3AF}', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              const Text(
+                'Challenges This Week',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFA5C9A0),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$_challengeWeekCompleted / 7',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF7BC47F),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              height: 6,
+              child: LinearProgressIndicator(
+                value: (_challengeWeekCompleted / 7).clamp(0.0, 1.0),
+                backgroundColor: AppColors.borderLight,
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF7BC47F)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$_challengeTotalCompleted total completed',
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.textDim,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

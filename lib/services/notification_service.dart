@@ -43,6 +43,8 @@ class NotificationService {
     'Don\'t break your streak! Take 30 seconds to check in.',
     'Your mood matters. Let\'s capture how you\'re feeling.',
     'A little self-reflection goes a long way. Ready to check in?',
+    'Today\'s challenge is ready! Check in to see what awaits you.',
+    'A new wellness challenge is waiting. Ready to give it a try?',
   ];
 
   /// Initialize the notification plugin and timezone data

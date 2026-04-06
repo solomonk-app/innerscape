@@ -133,6 +133,81 @@ class AiService {
     return _callGemini(systemPrompt, userMessage);
   }
 
+  /// Generate a personalized daily challenge based on recent mood patterns
+  static Future<Map<String, String>> generateDailyChallenge({
+    required List<MoodEntry> recentEntries,
+    required List<String> recentChallengeTitles,
+  }) async {
+    final recent = recentEntries.reversed.take(7).toList();
+    final moodSummary = recent.isEmpty
+        ? 'No recent entries.'
+        : recent.map((e) {
+            final label = moodOptions.firstWhere((m) => m.value == e.mood).label;
+            return '$label (${e.mood}/6)';
+          }).join(', ');
+
+    final avoidStr = recentChallengeTitles.isNotEmpty
+        ? '\nAvoid these recent titles: ${recentChallengeTitles.join(", ")}'
+        : '';
+
+    final systemPrompt =
+        'You are a wellness companion. Generate ONE daily micro-challenge based on the user\'s recent mood pattern. '
+        'If trending low (1-2), suggest self-care/relaxation/social connection. '
+        'If trending high (5-6), suggest gratitude/creative/pay-it-forward. '
+        'If neutral/flat (3-4), suggest novelty/mindfulness/physical activity. '
+        'Return ONLY valid JSON: {"title": "short title", "description": "1-2 sentence actionable challenge", "emoji": "single emoji"} '
+        'No markdown, no extra text.';
+
+    final userMessage =
+        'Recent moods (newest first): $moodSummary$avoidStr\n\n'
+        'Generate one personalized daily wellness challenge.';
+
+    final raw = await _callGeminiShort(systemPrompt, userMessage);
+
+    // Parse JSON response
+    try {
+      final cleaned = raw.replaceAll(RegExp(r'```json?\s*|\s*```'), '').trim();
+      final map = jsonDecode(cleaned) as Map<String, dynamic>;
+      return {
+        'title': map['title'] as String? ?? 'Daily Challenge',
+        'description': map['description'] as String? ?? 'Take a moment for yourself today.',
+        'emoji': map['emoji'] as String? ?? '\u{1F3AF}',
+      };
+    } catch (e) {
+      debugPrint('AiService: challenge JSON parse failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Short Gemini API call (150 tokens max) for challenge generation
+  static Future<String> _callGeminiShort(String systemPrompt, String userMessage) async {
+    final response = await http.post(
+      _effectiveUri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'system_instruction': {
+          'parts': [{'text': systemPrompt}]
+        },
+        'contents': [
+          {
+            'parts': [{'text': userMessage}]
+          }
+        ],
+        'generationConfig': {'maxOutputTokens': 150},
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final candidates = data['candidates'] as List;
+      if (candidates.isNotEmpty) {
+        final parts = candidates[0]['content']['parts'] as List;
+        return parts.map((p) => p['text'] as String).join('');
+      }
+    }
+    throw Exception('Gemini API call failed: ${response.statusCode}');
+  }
+
   /// Core Gemini API call — single turn
   static Future<String> _callGemini(String systemPrompt, String userMessage) async {
     try {

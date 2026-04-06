@@ -11,6 +11,8 @@ class InsightsScreen extends StatelessWidget {
   final VoidCallback onClearData;
   final Widget? digestCard;
   final Widget? capsuleCard;
+  final Widget? achievementCard;
+  final Widget? challengeCard;
 
   const InsightsScreen({
     super.key,
@@ -19,6 +21,8 @@ class InsightsScreen extends StatelessWidget {
     required this.onClearData,
     this.digestCard,
     this.capsuleCard,
+    this.achievementCard,
+    this.challengeCard,
   });
 
   @override
@@ -109,6 +113,26 @@ class InsightsScreen extends StatelessWidget {
               delay: const Duration(milliseconds: 100),
               duration: const Duration(milliseconds: 500),
               child: capsuleCard!,
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Achievement card (injected from main.dart)
+          if (achievementCard != null) ...[
+            FadeInDown(
+              delay: const Duration(milliseconds: 150),
+              duration: const Duration(milliseconds: 500),
+              child: achievementCard!,
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Challenge card (injected from main.dart)
+          if (challengeCard != null) ...[
+            FadeInDown(
+              delay: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 500),
+              child: challengeCard!,
             ),
             const SizedBox(height: 12),
           ],
