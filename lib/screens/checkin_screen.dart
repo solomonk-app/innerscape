@@ -8,14 +8,15 @@ import '../constants/bible_verses.dart';
 import '../services/ai_service.dart';
 import '../services/bible_verse_service.dart';
 import '../services/storage_service.dart';
-import '../services/challenge_service.dart';
 import '../services/analytics_service.dart';
+import '../services/tooltip_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/feature_tooltip.dart';
 import '../widgets/glass_card.dart';
-import '../widgets/challenge_card.dart';
-import '../models/daily_challenge.dart';
 import 'result_screen.dart';
 import 'breathwork_screen.dart';
+import 'journal_ideas_screen.dart';
+import 'journal_plans_screen.dart';
 
 class CheckInScreen extends StatefulWidget {
   final VoidCallback onEntryAdded;
@@ -36,44 +37,25 @@ class _CheckInScreenState extends State<CheckInScreen> {
   final Set<String> _selectedTags = {};
   final Map<String, List<String>> _customTags = {};
   String? _addingTagForCategory;
-  DailyChallenge? _todayChallenge;
+  final _moodSelectorKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _dailyPrompt = (dailyPrompts..shuffle()).first;
     _checkTodayEntry();
-    _loadChallenge();
+    _showFirstUseTooltip();
   }
 
-  Future<void> _loadChallenge() async {
-    try {
-      final challenge = await ChallengeService().getTodayChallenge();
-      if (mounted) setState(() => _todayChallenge = challenge);
-    } catch (e) {
-      // Challenge loading is non-critical
-    }
-  }
-
-  Future<void> _completeChallenge(String? reflection) async {
-    if (_todayChallenge == null) return;
-    await ChallengeService().completeChallenge(
-      _todayChallenge!.id,
-      reflection: reflection,
+  Future<void> _showFirstUseTooltip() async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    FeatureTooltip.show(
+      context: context,
+      message: 'Tap a mood to start your daily check-in.',
+      featureKey: TooltipService.firstCheckinMood,
+      targetKey: _moodSelectorKey,
     );
-    await AnalyticsService().logChallengeCompleted(
-      challengeId: _todayChallenge!.id,
-      hasReflection: reflection != null,
-    );
-    if (mounted) {
-      setState(() {
-        _todayChallenge = _todayChallenge!.copyWith(
-          isCompleted: true,
-          reflection: reflection,
-          completedAt: DateTime.now(),
-        );
-      });
-    }
   }
 
   Future<void> _checkTodayEntry() async {
@@ -186,18 +168,65 @@ class _CheckInScreenState extends State<CheckInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          // Daily challenge card
-          if (_todayChallenge != null)
-            FadeInDown(
-              duration: const Duration(milliseconds: 400),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: ChallengeCard(
-                  challenge: _todayChallenge!,
-                  onComplete: _completeChallenge,
+          // Journal tools — two-column quick links
+          FadeInDown(
+            duration: const Duration(milliseconds: 400),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                  Expanded(
+                    child: _JournalNavTile(
+                      emoji: '\u{1F4D6}',
+                      title: 'Journal Ideas',
+                      subtitle: 'Prompts by theme',
+                      accent: AppColors.warmGold,
+                      accentTint: const Color(0x1AD4A574),
+                      accentBorder: const Color(0x33D4A574),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) =>
+                                const JournalIdeasScreen(),
+                            transitionsBuilder: (_, anim, __, child) =>
+                                FadeTransition(opacity: anim, child: child),
+                            transitionDuration:
+                                const Duration(milliseconds: 300),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _JournalNavTile(
+                      emoji: '\u{1F33F}',
+                      title: 'Journal Plans',
+                      subtitle: '7, 14 & 21-day',
+                      accent: const Color(0xFF7BC47F),
+                      accentTint: const Color(0x1A7BC47F),
+                      accentBorder: const Color(0x337BC47F),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            pageBuilder: (_, __, ___) =>
+                                const JournalPlansScreen(),
+                            transitionsBuilder: (_, anim, __, child) =>
+                                FadeTransition(opacity: anim, child: child),
+                            transitionDuration:
+                                const Duration(milliseconds: 300),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  ],
                 ),
               ),
             ),
+          ),
 
           // Today already checked in notice
           if (_hasCheckedInToday)
@@ -328,6 +357,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
             delay: const Duration(milliseconds: 200),
             duration: const Duration(milliseconds: 500),
             child: Row(
+              key: _moodSelectorKey,
               children: moodOptions.map((mood) {
                 final isSelected = _selectedMood == mood.value;
                 return Expanded(
@@ -765,6 +795,70 @@ class _CheckInScreenState extends State<CheckInScreen> {
         ),
       ),
     ),
+    );
+  }
+}
+
+class _JournalNavTile extends StatelessWidget {
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Color accent;
+  final Color accentTint;
+  final Color accentBorder;
+  final VoidCallback onTap;
+
+  const _JournalNavTile({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.accent,
+    required this.accentTint,
+    required this.accentBorder,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      child: GestureDetector(
+        onTap: onTap,
+        child: GlassCard(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [accentTint, accentTint.withOpacity(0.4)],
+          ),
+          borderColor: accentBorder,
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 24)),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: accent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textDim,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

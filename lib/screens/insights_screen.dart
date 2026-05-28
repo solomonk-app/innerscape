@@ -13,6 +13,9 @@ class InsightsScreen extends StatelessWidget {
   final Widget? capsuleCard;
   final Widget? achievementCard;
   final Widget? challengeCard;
+  final Widget? actionableChallengeCard;
+  final Widget? eisenhowerCard;
+  final Widget? reflectionsCard;
 
   const InsightsScreen({
     super.key,
@@ -23,34 +26,71 @@ class InsightsScreen extends StatelessWidget {
     this.capsuleCard,
     this.achievementCard,
     this.challengeCard,
+    this.actionableChallengeCard,
+    this.eisenhowerCard,
+    this.reflectionsCard,
   });
+
+  List<Widget> _journalingCards() {
+    final cards = <Widget>[];
+    if (eisenhowerCard != null) {
+      cards.add(FadeInDown(
+        delay: const Duration(milliseconds: 350),
+        duration: const Duration(milliseconds: 500),
+        child: eisenhowerCard!,
+      ));
+      cards.add(const SizedBox(height: 12));
+    }
+    if (reflectionsCard != null) {
+      cards.add(FadeInDown(
+        delay: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 500),
+        child: reflectionsCard!,
+      ));
+      cards.add(const SizedBox(height: 12));
+    }
+    return cards;
+  }
 
   @override
   Widget build(BuildContext context) {
     if (entries.length < 3) {
-      return Center(
-        child: FadeIn(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('🔮', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 16),
-              Text(
-                'Log at least 3 entries to unlock\nyour mood insights and patterns.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMuted,
-                      height: 1.6,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${3 - entries.length} more to go!',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textDim,
-                    ),
-              ),
-            ],
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Center(
+          child: ConstrainedBox(
+            constraints:
+                BoxConstraints(maxWidth: kIsWeb ? 480 : double.infinity),
+            child: Column(
+              children: [
+                ..._journalingCards(),
+                const SizedBox(height: 24),
+                FadeIn(
+                  child: Column(
+                    children: [
+                      const Text('🔮', style: TextStyle(fontSize: 48)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Log at least 3 entries to unlock\nyour mood insights and patterns.',
+                        textAlign: TextAlign.center,
+                        style:
+                            Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textMuted,
+                                  height: 1.6,
+                                ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${3 - entries.length} more to go!',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textDim,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -127,7 +167,7 @@ class InsightsScreen extends StatelessWidget {
             const SizedBox(height: 12),
           ],
 
-          // Challenge card (injected from main.dart)
+          // Challenge stats card (injected from main.dart)
           if (challengeCard != null) ...[
             FadeInDown(
               delay: const Duration(milliseconds: 200),
@@ -136,6 +176,19 @@ class InsightsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
           ],
+
+          // Today's actionable daily challenge (injected from main.dart)
+          if (actionableChallengeCard != null) ...[
+            FadeInDown(
+              delay: const Duration(milliseconds: 225),
+              duration: const Duration(milliseconds: 500),
+              child: actionableChallengeCard!,
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Journaling tool cards (injected from main.dart)
+          ..._journalingCards(),
 
           // Stats grid
           GridView.count(

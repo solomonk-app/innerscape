@@ -23,7 +23,11 @@ import 'services/challenge_service.dart';
 import 'screens/checkin_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/insights_screen.dart';
-import 'screens/reminder_settings_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/eisenhower_screen.dart';
+import 'screens/reflection_prompts_screen.dart';
+import 'services/tooltip_service.dart';
+import 'widgets/feature_tooltip.dart';
 import 'screens/weekly_digest_screen.dart';
 import 'screens/time_capsule_screen.dart';
 import 'screens/achievement_gallery_screen.dart';
@@ -31,9 +35,11 @@ import 'widgets/ambient_particles.dart';
 import 'widgets/glass_card.dart';
 import 'widgets/adaptive_banner_ad.dart';
 import 'widgets/achievement_celebration.dart';
+import 'widgets/challenge_card.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/terms_screen.dart';
 import 'screens/support_screen.dart';
+import 'screens/about_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 void main() async {
@@ -70,6 +76,16 @@ Future<void> _initNotifications() async {
     } catch (e) {
       debugPrint('Notification digest reminder error: $e');
     }
+    try {
+      await notificationService.rescheduleReflectionsIfEnabled();
+    } catch (e) {
+      debugPrint('Notification reflection reschedule error: $e');
+    }
+    try {
+      await notificationService.rescheduleAffirmationsIfEnabled();
+    } catch (e) {
+      debugPrint('Notification affirmation reschedule error: $e');
+    }
   } catch (e) {
     debugPrint('Notification init error: $e');
   }
@@ -90,6 +106,7 @@ class FeelongApp extends StatelessWidget {
         '/privacy': (_) => const PrivacyPolicyScreen(),
         '/terms': (_) => const TermsScreen(),
         '/support': (_) => const SupportScreen(),
+        '/about': (_) => const AboutScreen(),
       },
     );
   }
@@ -152,13 +169,45 @@ class _HomeScreenState extends State<HomeScreen> {
   List<DailyChallenge> _challenges = [];
   int _challengeWeekCompleted = 0;
   int _challengeTotalCompleted = 0;
+  DailyChallenge? _todayChallenge;
+  final _insightsTabKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _loadEntries();
     _checkDigest();
+    _loadTodayChallenge();
     _initAds();
+  }
+
+  Future<void> _loadTodayChallenge() async {
+    try {
+      final challenge = await ChallengeService().getTodayChallenge();
+      if (mounted) setState(() => _todayChallenge = challenge);
+    } catch (_) {
+      // Non-critical
+    }
+  }
+
+  Future<void> _completeTodayChallenge(String? reflection) async {
+    if (_todayChallenge == null) return;
+    final id = _todayChallenge!.id;
+    await ChallengeService().completeChallenge(id, reflection: reflection);
+    await AnalyticsService().logChallengeCompleted(
+      challengeId: id,
+      hasReflection: reflection != null,
+    );
+    if (!mounted) return;
+    setState(() {
+      _todayChallenge = _todayChallenge!.copyWith(
+        isCompleted: true,
+        reflection: reflection,
+        completedAt: DateTime.now(),
+      );
+    });
+    // Refresh stats so the weekly progress card updates too.
+    await _loadEntries();
   }
 
   Future<void> _initAds() async {
@@ -169,6 +218,17 @@ class _HomeScreenState extends State<HomeScreen> {
     // Initialize consent + ad SDK in background (non-blocking)
     await ConsentService().requestConsent();
     await AdService().initialize();
+  }
+
+  Future<void> _showInsightsTooltip() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    FeatureTooltip.show(
+      context: context,
+      message: 'Track your mood patterns, achievements, and weekly insights here.',
+      featureKey: TooltipService.firstInsightsTab,
+      targetKey: _insightsTabKey,
+    );
   }
 
   Future<void> _loadEntries() async {
@@ -258,6 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _challenges = [];
       _challengeWeekCompleted = 0;
       _challengeTotalCompleted = 0;
+      _todayChallenge = null;
     });
   }
 
@@ -370,13 +431,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 8),
                       Semantics(
                         button: true,
-                        label: 'Notification settings',
+                        label: 'Settings',
                         child: GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
                             PageRouteBuilder(
                               pageBuilder: (_, __, ___) =>
-                                  const ReminderSettingsScreen(),
+                                  const SettingsScreen(),
                               transitionsBuilder: (_, anim, __, child) =>
                                   SlideTransition(
                                 position: Tween(
@@ -402,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             border: Border.all(color: AppColors.borderLight),
                           ),
                           child: const Icon(
-                            Icons.notifications_outlined,
+                            Icons.settings_outlined,
                             color: AppColors.textMuted,
                             size: 20,
                           ),
@@ -438,15 +499,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 6),
                       _TabButton(
+                        key: _insightsTabKey,
                         label: 'Insights',
                         isActive: _currentIndex == 2,
                         onTap: () {
                           setState(() => _currentIndex = 2);
                           AnalyticsService().logScreenView('insights');
+                          _showInsightsTooltip();
                         },
                       ),
                       if (kIsWeb) ...[
                         const Spacer(),
+                        _StoreButton(
+                          icon: Icons.info_outline,
+                          label: 'About',
+                          onTap: () =>
+                              Navigator.of(context).pushNamed('/about'),
+                        ),
+                        const SizedBox(width: 6),
                         _StoreButton(
                           icon: Icons.apple,
                           label: 'App Store',
@@ -523,6 +593,9 @@ class _HomeScreenState extends State<HomeScreen> {
           capsuleCard: _buildCapsuleCard(),
           achievementCard: _buildAchievementCard(),
           challengeCard: _buildChallengeStatsCard(),
+          actionableChallengeCard: _buildActionableChallengeCard(),
+          eisenhowerCard: _buildEisenhowerCard(),
+          reflectionsCard: _buildReflectionsCard(),
         );
       default:
         return const SizedBox();
@@ -726,6 +799,52 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget? _buildActionableChallengeCard() {
+    if (_todayChallenge == null) return null;
+    return ChallengeCard(
+      challenge: _todayChallenge!,
+      onComplete: _completeTodayChallenge,
+    );
+  }
+
+  Widget _buildEisenhowerCard() => _ToolNavCard(
+        emoji: '\u{1F9ED}',
+        title: 'Eisenhower Matrix',
+        subtitle: "Sort what's on your plate, find Q2",
+        accent: const Color(0xFFE07B6A),
+        accentTint: const Color(0x1AE07B6A),
+        accentBorder: const Color(0x33E07B6A),
+        onTap: () {
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const EisenhowerScreen(),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          );
+        },
+      );
+
+  Widget _buildReflectionsCard() => _ToolNavCard(
+        emoji: '\u{1F319}',
+        title: 'Weekly & Monthly Reflections',
+        subtitle: 'Deeper prompts on a slower cadence',
+        accent: AppColors.accent,
+        accentTint: AppColors.accentTranslucent,
+        accentBorder: AppColors.accentBorder,
+        onTap: () {
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const ReflectionPromptsScreen(),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          );
+        },
+      );
+
   Widget? _buildChallengeStatsCard() {
     if (_challengeTotalCompleted == 0 && _challenges.isEmpty) return null;
 
@@ -798,6 +917,7 @@ class _TabButton extends StatelessWidget {
   final VoidCallback onTap;
 
   const _TabButton({
+    super.key,
     required this.label,
     required this.isActive,
     required this.onTap,
@@ -873,6 +993,76 @@ class _StoreButton extends StatelessWidget {
                   letterSpacing: 0.5,
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ToolNavCard extends StatelessWidget {
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Color accent;
+  final Color accentTint;
+  final Color accentBorder;
+  final VoidCallback onTap;
+
+  const _ToolNavCard({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.accent,
+    required this.accentTint,
+    required this.accentBorder,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      child: GestureDetector(
+        onTap: onTap,
+        child: GlassCard(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [accentTint, accentTint.withOpacity(0.4)],
+          ),
+          borderColor: accentBorder,
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: accent,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textDim,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, color: accent, size: 14),
             ],
           ),
         ),
