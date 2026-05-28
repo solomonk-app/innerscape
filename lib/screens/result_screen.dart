@@ -8,8 +8,12 @@ import '../models/mood_entry.dart';
 import '../services/conversation_service.dart';
 import '../services/ad_service.dart';
 import '../services/analytics_service.dart';
+import '../services/review_service.dart';
+import '../services/storage_service.dart';
+import '../services/tooltip_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/feature_tooltip.dart';
 import 'time_capsule_screen.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -39,6 +43,10 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isAiTyping = false;
   final _scrollController = ScrollController();
 
+  // Insight feedback state
+  bool? _insightFeedback;
+  final _insightCardKey = GlobalKey();
+
   static const String _checkInCountKey = 'checkin_count_for_ads';
   static const int _interstitialFrequency = 2;
 
@@ -46,6 +54,36 @@ class _ResultScreenState extends State<ResultScreen> {
   void initState() {
     super.initState();
     _incrementCheckInCount();
+    _loadInsightFeedback();
+    _showInsightTooltip();
+  }
+
+  Future<void> _showInsightTooltip() async {
+    if (widget.entry.aiInsight.isEmpty) return;
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+    FeatureTooltip.show(
+      context: context,
+      message: 'This is your AI-generated reflection. It gets more personal as you check in more.',
+      featureKey: TooltipService.firstAiInsight,
+      targetKey: _insightCardKey,
+    );
+  }
+
+  Future<void> _loadInsightFeedback() async {
+    final storage = await StorageService.getInstance();
+    final feedback = await storage.getInsightFeedback(widget.entry.id);
+    if (mounted) setState(() => _insightFeedback = feedback);
+  }
+
+  Future<void> _submitInsightFeedback(bool isPositive) async {
+    setState(() => _insightFeedback = isPositive);
+    final storage = await StorageService.getInstance();
+    await storage.saveInsightFeedback(widget.entry.id, isPositive);
+    await AnalyticsService().logInsightFeedback(
+      entryId: widget.entry.id,
+      isPositive: isPositive,
+    );
   }
 
   @override
@@ -63,6 +101,13 @@ class _ResultScreenState extends State<ResultScreen> {
     if (count % _interstitialFrequency == 0) {
       final shown = await AdService().showInterstitial();
       if (shown) AnalyticsService().logInterstitialShown();
+    }
+
+    // Prompt for review after threshold check-ins
+    if (await ReviewService().shouldPromptForReview(count)) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) ReviewService().showReviewPrompt(context);
+      });
     }
   }
 
@@ -225,6 +270,7 @@ class _ResultScreenState extends State<ResultScreen> {
           // AI Insight card
           if (widget.entry.aiInsight.isNotEmpty)
             FadeInUp(
+              key: _insightCardKey,
               delay: const Duration(milliseconds: 400),
               duration: const Duration(milliseconds: 600),
               child: GlassCard(
@@ -257,6 +303,83 @@ class _ResultScreenState extends State<ResultScreen> {
                                 color: AppColors.textSecondary,
                                 fontStyle: FontStyle.italic,
                               ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Insight feedback row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: _insightFeedback != null
+                                ? Text(
+                                    'Thanks for the feedback!',
+                                    key: const ValueKey('feedback-thanks'),
+                                    style: TextStyle(
+                                      color: AppColors.textDim,
+                                      fontSize: 11,
+                                    ),
+                                  )
+                                : Text(
+                                    'Was this helpful?',
+                                    key: const ValueKey('feedback-ask'),
+                                    style: TextStyle(
+                                      color: AppColors.textDim,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: _insightFeedback != null
+                              ? null
+                              : () => _submitInsightFeedback(true),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _insightFeedback == true
+                                  ? const Color(0x267BC47F)
+                                  : Colors.transparent,
+                            ),
+                            child: Icon(
+                              _insightFeedback == true
+                                  ? Icons.thumb_up
+                                  : Icons.thumb_up_outlined,
+                              size: 16,
+                              color: _insightFeedback == true
+                                  ? const Color(0xFF7BC47F)
+                                  : AppColors.textDim,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: _insightFeedback != null
+                              ? null
+                              : () => _submitInsightFeedback(false),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _insightFeedback == false
+                                  ? const Color(0x26CF8B8B)
+                                  : Colors.transparent,
+                            ),
+                            child: Icon(
+                              _insightFeedback == false
+                                  ? Icons.thumb_down
+                                  : Icons.thumb_down_outlined,
+                              size: 16,
+                              color: _insightFeedback == false
+                                  ? const Color(0xFFCF8B8B)
+                                  : AppColors.textDim,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

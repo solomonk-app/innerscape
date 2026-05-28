@@ -8,17 +8,67 @@ import '../services/storage_service.dart';
 import '../main.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  final bool isReplay;
+
+  const OnboardingScreen({super.key, this.isReplay = false});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with TickerProviderStateMixin {
   final _pageController = PageController();
   int _currentPage = 0;
 
+  // Page 1: interactive mood selection
+  int? _selectedDemoMood;
+
+  // Page 2: typewriter animation
+  late AnimationController _typewriterController;
+  final String _typewriterText =
+      'You tend to feel better on weekends. Consider what makes those days different \u2014 and bring more of that into your week.';
+  bool _typewriterStarted = false;
+
+  // Page 3: pulsing glow
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _typewriterController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _pageController.addListener(_onPageScroll);
+  }
+
+  void _onPageScroll() {
+    final page = _pageController.page?.round() ?? 0;
+    if (page == 1 && !_typewriterStarted) {
+      _typewriterStarted = true;
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) _typewriterController.forward();
+      });
+    }
+    if (page == 2) {
+      if (!_pulseController.isAnimating) {
+        _pulseController.repeat(reverse: true);
+      }
+    }
+  }
+
   Future<void> _complete() async {
+    if (widget.isReplay) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
     final storage = await StorageService.getInstance();
     await storage.setOnboardingSeen();
     if (!mounted) return;
@@ -41,7 +91,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   void dispose() {
+    _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
+    _typewriterController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -159,23 +212,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                             ),
                           )
-                        : ElevatedButton(
-                            onPressed: _complete,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accent,
-                              foregroundColor: AppColors.background,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                        : AnimatedBuilder(
+                            animation: _pulseController,
+                            builder: (context, child) {
+                              final glowOpacity =
+                                  0.15 + (_pulseController.value * 0.25);
+                              return Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.accent
+                                          .withOpacity(glowOpacity),
+                                      blurRadius: 20,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: child,
+                              );
+                            },
+                            child: ElevatedButton(
+                              onPressed: _complete,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accent,
+                                foregroundColor: AppColors.background,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 8,
+                                shadowColor: AppColors.accent.withOpacity(0.3),
+                                minimumSize: const Size(double.infinity, 56),
                               ),
-                              elevation: 8,
-                              shadowColor: AppColors.accent.withOpacity(0.3),
-                            ),
-                            child: const Text(
-                              'Begin Your First Check-In',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5,
+                              child: Text(
+                                widget.isReplay
+                                    ? 'Back to App'
+                                    : 'Begin Your First Check-In',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
                           ),
@@ -190,7 +267,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  // ─── Page 1: Interactive mood selection ───
+
   Widget _buildPage1(BuildContext context) {
+    final emojis = ['😢', '😟', '😐', '🙂', '😊', '🤩'];
+    final labels = ['Awful', 'Bad', 'Meh', 'Okay', 'Good', 'Amazing'];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
@@ -226,37 +308,83 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             duration: const Duration(milliseconds: 500),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: ['😢', '😟', '😐', '🙂', '😊', '🤩'].map((emoji) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.borderLight),
+              children: List.generate(emojis.length, (i) {
+                final isSelected = _selectedDemoMood == i;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedDemoMood = i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutBack,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.all(10),
+                    transform: isSelected
+                        ? (Matrix4.identity()..scale(1.2))
+                        : Matrix4.identity(),
+                    transformAlignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.accent.withOpacity(0.2)
+                          : AppColors.surface.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.accent
+                            : AppColors.borderLight,
+                      ),
+                    ),
+                    child: Text(emojis[i],
+                        style: const TextStyle(fontSize: 22)),
                   ),
-                  child: Text(emoji, style: const TextStyle(fontSize: 22)),
                 );
-              }).toList(),
+              }),
             ),
           ),
           const SizedBox(height: 24),
-          FadeInUp(
-            key: const ValueKey('page1-hint'),
-            delay: const Duration(milliseconds: 450),
-            duration: const Duration(milliseconds: 500),
-            child: Text(
-              'One tap is all it takes',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textDim,
-                    fontStyle: FontStyle.italic,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _selectedDemoMood != null
+                ? FadeInUp(
+                    key: ValueKey('mood-selected-$_selectedDemoMood'),
+                    duration: const Duration(milliseconds: 400),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Feeling ${labels[_selectedDemoMood!]}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: AppColors.warmGold,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "That's how easy it is!",
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textDim,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Text(
+                    'Tap a mood to try it',
+                    key: const ValueKey('tap-hint'),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textDim,
+                          fontStyle: FontStyle.italic,
+                        ),
                   ),
-            ),
           ),
         ],
       ),
     );
   }
+
+  // ─── Page 2: Typewriter AI reflection ───
 
   Widget _buildPage2(BuildContext context) {
     return Padding(
@@ -313,13 +441,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    'You tend to feel better on weekends. Consider what makes those days different — and bring more of that into your week.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                          fontStyle: FontStyle.italic,
-                          height: 1.6,
-                        ),
+                  AnimatedBuilder(
+                    animation: _typewriterController,
+                    builder: (context, _) {
+                      final charCount =
+                          (_typewriterController.value * _typewriterText.length)
+                              .round();
+                      final displayText =
+                          _typewriterText.substring(0, charCount);
+                      return Text(
+                        displayText,
+                        style:
+                            Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.6,
+                                ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -348,6 +487,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+
+  // ─── Page 3: Pulsing CTA ───
 
   Widget _buildPage3(BuildContext context) {
     return Padding(

@@ -160,6 +160,139 @@ class AnalyticsService {
     );
   }
 
+  // --- Review ---
+
+  Future<void> logReviewPromptShown() async {
+    await _analytics.logEvent(name: 'review_prompt_shown');
+  }
+
+  Future<void> logReviewPromptAccepted() async {
+    await _analytics.logEvent(name: 'review_prompt_accepted');
+  }
+
+  Future<void> logReviewPromptDeclined() async {
+    await _analytics.logEvent(name: 'review_prompt_declined');
+  }
+
+  // --- Insight Feedback ---
+
+  Future<void> logInsightFeedback({
+    required String entryId,
+    required bool isPositive,
+  }) async {
+    await _analytics.logEvent(
+      name: 'insight_feedback',
+      parameters: {
+        'entry_id': entryId,
+        'is_positive': isPositive ? 1 : 0,
+      },
+    );
+  }
+
+  // --- Journal ideas ---
+
+  Future<void> logJournalIdeaCompleted({
+    required String ideaId,
+    required bool writtenInApp,
+  }) async {
+    await _analytics.logEvent(
+      name: 'journal_idea_completed',
+      parameters: {
+        'idea_id': ideaId,
+        'written_in_app': writtenInApp ? 1 : 0,
+      },
+    );
+  }
+
+  // --- Journal plans ---
+
+  Future<void> logPlanStarted({
+    required String planId,
+    required int lengthDays,
+  }) async {
+    await _analytics.logEvent(
+      name: 'plan_started',
+      parameters: {
+        'plan_id': planId,
+        'length_days': lengthDays,
+      },
+    );
+  }
+
+  Future<void> logPlanDayCompleted({
+    required String planId,
+    required int day,
+    required bool writtenInApp,
+  }) async {
+    await _analytics.logEvent(
+      name: 'plan_day_completed',
+      parameters: {
+        'plan_id': planId,
+        'day': day,
+        'written_in_app': writtenInApp ? 1 : 0,
+      },
+    );
+  }
+
+  Future<void> logPlanCompleted({required String planId}) async {
+    await _analytics.logEvent(
+      name: 'plan_completed',
+      parameters: {'plan_id': planId},
+    );
+  }
+
+  // --- Affirmations ---
+
+  Future<void> logAffirmationTimerStarted({required int durationMin}) async {
+    await _analytics.logEvent(
+      name: 'affirmation_timer_started',
+      parameters: {'duration_min': durationMin},
+    );
+  }
+
+  Future<void> logAffirmationNotificationsToggled({
+    required bool enabled,
+    int? intervalHours,
+  }) async {
+    await _analytics.logEvent(
+      name: 'affirmation_notifications_toggled',
+      parameters: {
+        'enabled': enabled ? 1 : 0,
+        if (intervalHours != null) 'interval_hours': intervalHours,
+      },
+    );
+  }
+
+  // --- Eisenhower ---
+
+  Future<void> logEisenhowerSaved({
+    required int itemCount,
+    required bool hasReflection,
+  }) async {
+    await _analytics.logEvent(
+      name: 'eisenhower_saved',
+      parameters: {
+        'item_count': itemCount,
+        'has_reflection': hasReflection ? 1 : 0,
+      },
+    );
+  }
+
+  // --- Reflections ---
+
+  Future<void> logReflectionCompleted({
+    required String cadence,
+    required bool writtenInApp,
+  }) async {
+    await _analytics.logEvent(
+      name: 'reflection_completed',
+      parameters: {
+        'cadence': cadence,
+        'written_in_app': writtenInApp ? 1 : 0,
+      },
+    );
+  }
+
   // --- User properties ---
 
   Future<void> setUserProperties({

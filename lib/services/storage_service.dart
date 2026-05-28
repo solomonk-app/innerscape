@@ -5,6 +5,9 @@ import '../models/time_capsule.dart';
 import '../models/weekly_digest.dart';
 import '../models/achievement.dart';
 import '../models/daily_challenge.dart';
+import '../models/journal_plan.dart';
+import '../models/eisenhower_entry.dart';
+import '../models/prompt_completion.dart';
 
 class StorageService {
   static const String _entriesKey = 'mood_entries';
@@ -13,6 +16,10 @@ class StorageService {
   static const String _onboardingKey = 'has_seen_onboarding';
   static const String _achievementsKey = 'earned_achievements';
   static const String _challengesKey = 'daily_challenges';
+  static const String _insightFeedbackKey = 'insight_feedback';
+  static const String _planProgressKey = 'journal_plan_progress';
+  static const String _eisenhowerKey = 'eisenhower_entries';
+  static const String _promptCompletionsKey = 'prompt_completions';
   static StorageService? _instance;
   static Future<StorageService>? _initFuture;
   late SharedPreferences _prefs;
@@ -67,6 +74,10 @@ class StorageService {
     await _prefs.remove('breathwork_completed');
     await _prefs.remove('conversation_started');
     await _prefs.remove('digest_viewed');
+    await _prefs.remove(_insightFeedbackKey);
+    await _prefs.remove(_planProgressKey);
+    await _prefs.remove(_eisenhowerKey);
+    await _prefs.remove(_promptCompletionsKey);
   }
 
   int calculateStreak(List<MoodEntry> entries) {
@@ -165,6 +176,23 @@ class StorageService {
     await _prefs.setString(_achievementsKey, jsonEncode(jsonList));
   }
 
+  // ─── Insight Feedback ───
+
+  Future<void> saveInsightFeedback(String entryId, bool isPositive) async {
+    final data = _prefs.getString(_insightFeedbackKey);
+    final Map<String, dynamic> map =
+        data != null ? Map<String, dynamic>.from(jsonDecode(data)) : {};
+    map[entryId] = isPositive;
+    await _prefs.setString(_insightFeedbackKey, jsonEncode(map));
+  }
+
+  Future<bool?> getInsightFeedback(String entryId) async {
+    final data = _prefs.getString(_insightFeedbackKey);
+    if (data == null) return null;
+    final Map<String, dynamic> map = Map<String, dynamic>.from(jsonDecode(data));
+    return map[entryId] as bool?;
+  }
+
   // ─── Daily Challenges ───
 
   Future<List<DailyChallenge>> getChallenges() async {
@@ -178,5 +206,84 @@ class StorageService {
   Future<void> saveChallenges(List<DailyChallenge> challenges) async {
     final jsonList = challenges.map((c) => c.toJson()).toList();
     await _prefs.setString(_challengesKey, jsonEncode(jsonList));
+  }
+
+  // ─── Journal Plan Progress ───
+
+  Future<List<JournalPlanProgress>> getPlanProgress() async {
+    final String? data = _prefs.getString(_planProgressKey);
+    if (data == null) return [];
+    final List<dynamic> jsonList = jsonDecode(data);
+    return jsonList
+        .map((e) => JournalPlanProgress.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> savePlanProgress(List<JournalPlanProgress> progress) async {
+    final jsonList = progress.map((p) => p.toJson()).toList();
+    await _prefs.setString(_planProgressKey, jsonEncode(jsonList));
+  }
+
+  // ─── Eisenhower Entries ───
+
+  Future<List<EisenhowerEntry>> getEisenhowerEntries() async {
+    final String? data = _prefs.getString(_eisenhowerKey);
+    if (data == null) return [];
+    final List<dynamic> jsonList = jsonDecode(data);
+    return jsonList
+        .map((e) => EisenhowerEntry.fromJson(e as Map<String, dynamic>))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  Future<void> saveEisenhowerEntry(EisenhowerEntry entry) async {
+    final entries = await getEisenhowerEntries();
+    final index = entries.indexWhere((e) => e.id == entry.id);
+    if (index >= 0) {
+      entries[index] = entry;
+    } else {
+      entries.add(entry);
+    }
+    final jsonList = entries.map((e) => e.toJson()).toList();
+    await _prefs.setString(_eisenhowerKey, jsonEncode(jsonList));
+  }
+
+  Future<void> deleteEisenhowerEntry(String id) async {
+    final entries = await getEisenhowerEntries();
+    entries.removeWhere((e) => e.id == id);
+    final jsonList = entries.map((e) => e.toJson()).toList();
+    await _prefs.setString(_eisenhowerKey, jsonEncode(jsonList));
+  }
+
+  // ─── Prompt Completions ───
+
+  Future<List<PromptCompletion>> getPromptCompletions() async {
+    final String? data = _prefs.getString(_promptCompletionsKey);
+    if (data == null) return [];
+    final List<dynamic> jsonList = jsonDecode(data);
+    return jsonList
+        .map((e) => PromptCompletion.fromJson(e as Map<String, dynamic>))
+        .toList()
+      ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
+  }
+
+  Future<void> addPromptCompletion(PromptCompletion completion) async {
+    final completions = await getPromptCompletions();
+    completions.add(completion);
+    final jsonList = completions.map((c) => c.toJson()).toList();
+    await _prefs.setString(_promptCompletionsKey, jsonEncode(jsonList));
+  }
+
+  Future<bool> isPromptCompleted(String promptKey) async {
+    final completions = await getPromptCompletions();
+    return completions.any((c) => c.promptKey == promptKey);
+  }
+
+  Future<PromptCompletion?> latestCompletionFor(String promptKey) async {
+    final completions = await getPromptCompletions();
+    for (final c in completions) {
+      if (c.promptKey == promptKey) return c;
+    }
+    return null;
   }
 }
