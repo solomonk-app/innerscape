@@ -102,7 +102,11 @@ class FeelongApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       navigatorObservers: [AnalyticsService().observer],
       routes: {
-        '/': (_) => const _RootNavigation(),
+        // On web, the bare domain (feelong.app) lands on the About page.
+        // Native apps open straight into the journal.
+        '/': (_) => kIsWeb ? const AboutScreen() : const _RootNavigation(),
+        // Journal entry point, reached from the "Use the web version" button.
+        '/app': (_) => const _RootNavigation(),
         '/privacy': (_) => const PrivacyPolicyScreen(),
         '/terms': (_) => const TermsScreen(),
         '/support': (_) => const SupportScreen(),

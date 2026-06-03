@@ -22,14 +22,16 @@ class AboutScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: AppColors.textMuted,
-                      size: 20,
-                    ),
-                  ),
+                  Navigator.of(context).canPop()
+                      ? IconButton(
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: AppColors.textMuted,
+                            size: 20,
+                          ),
+                        )
+                      : const SizedBox(width: 48),
                   const Expanded(
                     child: Text(
                       'About',
@@ -76,7 +78,7 @@ class AboutScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        _DownloadButton(
+                        _CtaButton(
                           icon: Icons.apple,
                           label: 'Download on the App Store',
                           onTap: () => launchUrl(
@@ -85,7 +87,7 @@ class AboutScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        _DownloadButton(
+                        _CtaButton(
                           icon: Icons.shop,
                           label: 'Get it on Google Play',
                           onTap: () => launchUrl(
@@ -93,6 +95,15 @@ class AboutScreen extends StatelessWidget {
                             mode: LaunchMode.externalApplication,
                           ),
                         ),
+                        if (kIsWeb) ...[
+                          const SizedBox(height: 12),
+                          _CtaButton(
+                            icon: Icons.language,
+                            label: 'Use the web version',
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('/app'),
+                          ),
+                        ],
                         const SizedBox(height: 48),
 
                         // App info
@@ -217,12 +228,12 @@ class AboutScreen extends StatelessWidget {
   }
 }
 
-class _DownloadButton extends StatelessWidget {
+class _CtaButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _DownloadButton({
+  const _CtaButton({
     required this.icon,
     required this.label,
     required this.onTap,
