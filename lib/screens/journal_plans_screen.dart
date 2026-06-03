@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../constants/journal_plans.dart';
 import '../models/journal_plan.dart';
@@ -68,17 +69,19 @@ class _JournalPlansScreenState extends State<JournalPlansScreen> {
   void _openActive(JournalPlanProgress progress) {
     final template = planTemplateById(progress.planId);
     if (template == null) return;
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => JournalPlanDetailScreen(
-          template: template,
-          progress: progress,
-        ),
-        transitionsBuilder: (_, anim, __, child) =>
-            FadeTransition(opacity: anim, child: child),
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    ).then((_) => _load());
+    Navigator.of(context)
+        .push(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => JournalPlanDetailScreen(
+              template: template,
+              progress: progress,
+            ),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        )
+        .then((_) => _load());
   }
 
   @override
@@ -114,7 +117,6 @@ class _JournalPlansScreenState extends State<JournalPlansScreen> {
                 ],
               ),
             ),
-
             const Padding(
               padding: EdgeInsets.fromLTRB(24, 4, 24, 16),
               child: Text(
@@ -123,7 +125,6 @@ class _JournalPlansScreenState extends State<JournalPlansScreen> {
                 style: TextStyle(color: AppColors.textDim, fontSize: 12),
               ),
             ),
-
             Expanded(
               child: _loading
                   ? const Center(
@@ -132,51 +133,55 @@ class _JournalPlansScreenState extends State<JournalPlansScreen> {
                         strokeWidth: 2,
                       ),
                     )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                      children: [
-                        if (_active.isNotEmpty) ...[
-                          const _SectionHeader(label: 'YOUR ACTIVE PLANS'),
-                          const SizedBox(height: 10),
-                          for (final p in _active) ...[
-                            _ActivePlanCard(
-                              progress: p,
-                              onTap: () => _openActive(p),
+                  : Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: kIsWeb ? 480 : double.infinity,
+                        ),
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                          children: [
+                            if (_active.isNotEmpty) ...[
+                              const _SectionHeader(label: 'YOUR ACTIVE PLANS'),
+                              const SizedBox(height: 10),
+                              for (final p in _active) ...[
+                                _ActivePlanCard(
+                                  progress: p,
+                                  onTap: () => _openActive(p),
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                              const SizedBox(height: 18),
+                            ],
+                            _SectionHeader(
+                              label: _active.isEmpty
+                                  ? 'CHOOSE A PLAN TO START'
+                                  : 'AVAILABLE PLANS',
                             ),
                             const SizedBox(height: 10),
-                          ],
-                          const SizedBox(height: 18),
-                        ],
-
-                        _SectionHeader(
-                          label: _active.isEmpty
-                              ? 'CHOOSE A PLAN TO START'
-                              : 'AVAILABLE PLANS',
-                        ),
-                        const SizedBox(height: 10),
-
-                        if (_availableTemplates.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(
-                              child: Text(
-                                "You're running every plan we've got. \u{1F44F}",
-                                style: TextStyle(
-                                  color: AppColors.textDim,
-                                  fontSize: 13,
+                            if (_availableTemplates.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 24),
+                                child: Center(
+                                  child: Text(
+                                    "You're running every plan we've got. \u{1F44F}",
+                                    style: TextStyle(
+                                      color: AppColors.textDim,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-
-                        for (final t in _availableTemplates) ...[
-                          _TemplateCard(
-                            template: t,
-                            onTap: () => _openTemplate(t),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ],
+                            for (final t in _availableTemplates) ...[
+                              _TemplateCard(
+                                template: t,
+                                onTap: () => _openTemplate(t),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
             ),
           ],
@@ -285,8 +290,7 @@ class _ActivePlanCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: fraction,
                     backgroundColor: AppColors.borderLight,
-                    valueColor:
-                        const AlwaysStoppedAnimation(AppColors.accent),
+                    valueColor: const AlwaysStoppedAnimation(AppColors.accent),
                   ),
                 ),
               ),

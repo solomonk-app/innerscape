@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/eisenhower_entry.dart';
@@ -123,7 +124,8 @@ class _EisenhowerScreenState extends State<EisenhowerScreen> {
               ),
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.background.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(12),
@@ -213,8 +215,8 @@ class _EisenhowerScreenState extends State<EisenhowerScreen> {
                             return;
                           }
                           setState(() {
-                            final idx = _items
-                                .indexWhere((i) => i.id == item.id);
+                            final idx =
+                                _items.indexWhere((i) => i.id == item.id);
                             if (idx >= 0) {
                               _items[idx] = _items[idx]
                                   .copyWith(text: text, quadrant: chosen);
@@ -352,239 +354,245 @@ class _EisenhowerScreenState extends State<EisenhowerScreen> {
             ),
 
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                children: [
-                  // Explanation
-                  if (_showExplanation)
-                    GlassCard(
-                      color: AppColors.surface.withOpacity(0.4),
-                      borderColor: AppColors.borderLight,
-                      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints:
+                      BoxConstraints(maxWidth: kIsWeb ? 880 : double.infinity),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    children: [
+                      // Explanation
+                      if (_showExplanation)
+                        GlassCard(
+                          color: AppColors.surface.withOpacity(0.4),
+                          borderColor: AppColors.borderLight,
+                          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Expanded(
-                                child: Text(
-                                  'What is this for?',
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'What is this for?',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  GestureDetector(
+                                    onTap: () => setState(
+                                        () => _showExplanation = false),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(4),
+                                      child: Icon(
+                                        Icons.close,
+                                        color: AppColors.textMuted,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              GestureDetector(
-                                onTap: () =>
-                                    setState(() => _showExplanation = false),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(4),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: AppColors.textMuted,
-                                    size: 16,
-                                  ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                "Sort what's on your plate by urgency and importance. Notice how much of your time goes to Q2 — that's where wellbeing lives.",
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                  height: 1.5,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            "Sort what's on your plate by urgency and importance. Notice how much of your time goes to Q2 — that's where wellbeing lives.",
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                              height: 1.5,
+                        ),
+
+                      if (_showExplanation) const SizedBox(height: 14),
+
+                      // 2x2 Matrix
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _QuadrantPanel(
+                              quadrant: EisenhowerQuadrant.q1DoNow,
+                              items: _itemsFor(EisenhowerQuadrant.q1DoNow),
+                              onItemTap: _editItem,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _QuadrantPanel(
+                              quadrant: EisenhowerQuadrant.q2Schedule,
+                              items: _itemsFor(EisenhowerQuadrant.q2Schedule),
+                              onItemTap: _editItem,
                             ),
                           ),
                         ],
                       ),
-                    ),
-
-                  if (_showExplanation) const SizedBox(height: 14),
-
-                  // 2x2 Matrix
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _QuadrantPanel(
-                          quadrant: EisenhowerQuadrant.q1DoNow,
-                          items: _itemsFor(EisenhowerQuadrant.q1DoNow),
-                          onItemTap: _editItem,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _QuadrantPanel(
-                          quadrant: EisenhowerQuadrant.q2Schedule,
-                          items: _itemsFor(EisenhowerQuadrant.q2Schedule),
-                          onItemTap: _editItem,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _QuadrantPanel(
-                          quadrant: EisenhowerQuadrant.q3Delegate,
-                          items: _itemsFor(EisenhowerQuadrant.q3Delegate),
-                          onItemTap: _editItem,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _QuadrantPanel(
-                          quadrant: EisenhowerQuadrant.q4Eliminate,
-                          items: _itemsFor(EisenhowerQuadrant.q4Eliminate),
-                          onItemTap: _editItem,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Add-item bar
-                  const Text(
-                    'ADD AN ITEM',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppColors.textMuted,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.background.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _itemController,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 14,
+                      const SizedBox(height: 10),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _QuadrantPanel(
+                              quadrant: EisenhowerQuadrant.q3Delegate,
+                              items: _itemsFor(EisenhowerQuadrant.q3Delegate),
+                              onItemTap: _editItem,
                             ),
-                            decoration: const InputDecoration(
-                              hintText: "What's on your plate?",
-                              hintStyle: TextStyle(
-                                color: AppColors.textDim,
-                                fontSize: 14,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _QuadrantPanel(
+                              quadrant: EisenhowerQuadrant.q4Eliminate,
+                              items: _itemsFor(EisenhowerQuadrant.q4Eliminate),
+                              onItemTap: _editItem,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Add-item bar
+                      const Text(
+                        'ADD AN ITEM',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textMuted,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.background.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.borderLight),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _itemController,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 14,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText: "What's on your plate?",
+                                  hintStyle: TextStyle(
+                                    color: AppColors.textDim,
+                                    fontSize: 14,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
+                                onSubmitted: (_) => _addItem(),
                               ),
-                              border: InputBorder.none,
                             ),
-                            onSubmitted: (_) => _addItem(),
+                            IconButton(
+                              onPressed: _addItem,
+                              icon: const Icon(
+                                Icons.add_circle,
+                                color: AppColors.accent,
+                                size: 26,
+                              ),
+                              tooltip: 'Add to selected quadrant',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final q in EisenhowerQuadrant.values)
+                            _QuadrantChip(
+                              quadrant: q,
+                              isActive: _selectedQuadrant == q,
+                              onTap: () =>
+                                  setState(() => _selectedQuadrant = q),
+                            ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Reflection
+                      const Text(
+                        'REFLECT (OPTIONAL)',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textMuted,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.background.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.borderLight),
+                        ),
+                        child: TextField(
+                          controller: _reflectionController,
+                          maxLines: 5,
+                          minLines: 3,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            height: 1.6,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText:
+                                "What do you notice about how you're spending your time?",
+                            hintStyle: TextStyle(
+                              color: AppColors.textDim,
+                              fontSize: 13,
+                            ),
+                            border: InputBorder.none,
                           ),
                         ),
-                        IconButton(
-                          onPressed: _addItem,
-                          icon: const Icon(
-                            Icons.add_circle,
-                            color: AppColors.accent,
-                            size: 26,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Save
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _isSaving ? null : _saveEntry,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accent,
+                            foregroundColor: AppColors.background,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
-                          tooltip: 'Add to selected quadrant',
+                          child: Text(
+                            _isSaving ? 'Saving...' : 'Save entry',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final q in EisenhowerQuadrant.values)
-                        _QuadrantChip(
-                          quadrant: q,
-                          isActive: _selectedQuadrant == q,
-                          onTap: () =>
-                              setState(() => _selectedQuadrant = q),
-                        ),
+                      ),
                     ],
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Reflection
-                  const Text(
-                    'REFLECT (OPTIONAL)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppColors.textMuted,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.background.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: TextField(
-                      controller: _reflectionController,
-                      maxLines: 5,
-                      minLines: 3,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        height: 1.6,
-                      ),
-                      decoration: const InputDecoration(
-                        hintText:
-                            "What do you notice about how you're spending your time?",
-                        hintStyle: TextStyle(
-                          color: AppColors.textDim,
-                          fontSize: 13,
-                        ),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Save
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: _isSaving ? null : _saveEntry,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: AppColors.background,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        _isSaving ? 'Saving...' : 'Save entry',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -713,7 +721,8 @@ class _QuadrantChip extends StatelessWidget {
     return Semantics(
       button: true,
       selected: isActive,
-      label: '${_quadrantShort(quadrant)} — ${eisenhowerQuadrantLabel(quadrant)}',
+      label:
+          '${_quadrantShort(quadrant)} — ${eisenhowerQuadrantLabel(quadrant)}',
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
@@ -1025,8 +1034,7 @@ class _QuadrantItemGroup extends StatelessWidget {
           children: [
             for (final item in items)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),

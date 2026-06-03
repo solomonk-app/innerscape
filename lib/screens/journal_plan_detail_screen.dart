@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants/journal_plans.dart';
@@ -67,8 +68,7 @@ class _JournalPlanDetailScreenState extends State<JournalPlanDetailScreen> {
         }
         await _refresh();
 
-        final nowComplete =
-            service.isComplete(_progress, widget.template);
+        final nowComplete = service.isComplete(_progress, widget.template);
         if (!wasComplete && nowComplete) {
           AnalyticsService().logPlanCompleted(planId: widget.template.id);
           if (mounted) _showCelebration();
@@ -203,108 +203,115 @@ class _JournalPlanDetailScreenState extends State<JournalPlanDetailScreen> {
             ),
 
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-                children: [
-                  // Plan summary card
-                  GlassCard(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0x1AE8945A),
-                        Color(0x14D4A574),
-                      ],
-                    ),
-                    borderColor: AppColors.accentBorder,
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: kIsWeb ? 480 : double.infinity,
+                  ),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                    children: [
+                      // Plan summary card
+                      GlassCard(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0x1AE8945A),
+                            Color(0x14D4A574),
+                          ],
+                        ),
+                        borderColor: AppColors.accentBorder,
+                        padding: const EdgeInsets.all(18),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              widget.template.emoji,
-                              style: const TextStyle(fontSize: 28),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.template.emoji,
+                                  style: const TextStyle(fontSize: 28),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.template.title,
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        widget.template.description,
+                                        style: const TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 13,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.template.title,
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                            const SizedBox(height: 14),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: SizedBox(
+                                height: 6,
+                                child: LinearProgressIndicator(
+                                  value: fraction,
+                                  backgroundColor: AppColors.borderLight,
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    AppColors.accent,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    widget.template.description,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isDone
+                                  ? 'Plan complete — ${widget.template.lengthDays} of ${widget.template.lengthDays} days'
+                                  : 'Day ${currentDay ?? widget.template.lengthDays} of ${widget.template.lengthDays}',
+                              style: const TextStyle(
+                                color: AppColors.accent,
+                                fontSize: 12,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: SizedBox(
-                            height: 6,
-                            child: LinearProgressIndicator(
-                              value: fraction,
-                              backgroundColor: AppColors.borderLight,
-                              valueColor: const AlwaysStoppedAnimation(
-                                AppColors.accent,
-                              ),
-                            ),
-                          ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        'DAYS',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textMuted,
+                          letterSpacing: 2,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          isDone
-                              ? 'Plan complete — ${widget.template.lengthDays} of ${widget.template.lengthDays} days'
-                              : 'Day ${currentDay ?? widget.template.lengthDays} of ${widget.template.lengthDays}',
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 12,
-                          ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      for (final day in widget.template.dayPrompts)
+                        _DayRow(
+                          day: day,
+                          completedAt: _progress.completedDays[day.day],
+                          isCurrent: currentDay == day.day,
+                          onTap: () => _openDay(day),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
-
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'DAYS',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppColors.textMuted,
-                      letterSpacing: 2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  for (final day in widget.template.dayPrompts)
-                    _DayRow(
-                      day: day,
-                      completedAt: _progress.completedDays[day.day],
-                      isCurrent: currentDay == day.day,
-                      onTap: () => _openDay(day),
-                    ),
-                ],
+                ),
               ),
             ),
           ],
@@ -408,9 +415,8 @@ class _DayRow extends StatelessWidget {
                         style: TextStyle(
                           color: titleColor,
                           fontSize: 13,
-                          fontWeight: isCurrent
-                              ? FontWeight.w600
-                              : FontWeight.w500,
+                          fontWeight:
+                              isCurrent ? FontWeight.w600 : FontWeight.w500,
                         ),
                       ),
                       if (completedAt != null) ...[
@@ -437,9 +443,7 @@ class _DayRow extends StatelessWidget {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: isCurrent
-                      ? AppColors.accent
-                      : AppColors.textDim,
+                  color: isCurrent ? AppColors.accent : AppColors.textDim,
                   size: 12,
                 ),
               ],

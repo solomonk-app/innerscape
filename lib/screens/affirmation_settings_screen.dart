@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../services/analytics_service.dart';
 import '../services/notification_service.dart';
@@ -161,191 +162,195 @@ class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
                         strokeWidth: 2,
                       ),
                     )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            'Gentle nudges throughout your day, drawn from a curated list of affirmations.',
-                            style: TextStyle(
-                              color: AppColors.textDim,
-                              fontSize: 12,
-                              height: 1.5,
-                            ),
-                          ),
+                  : Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: kIsWeb ? 480 : double.infinity,
                         ),
-                        const SizedBox(height: 18),
-
-                        // Toggle
-                        GlassCard(
-                          color: AppColors.surface.withOpacity(0.5),
-                          borderColor: AppColors.borderLight,
-                          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                          child: Row(
-                            children: [
-                              const Expanded(
-                                child: Text(
-                                  'Send affirmation reminders',
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Text(
+                                'Gentle nudges throughout your day, drawn from a curated list of affirmations.',
+                                style: TextStyle(
+                                  color: AppColors.textDim,
+                                  fontSize: 12,
+                                  height: 1.5,
                                 ),
                               ),
-                              Switch(
-                                value: _enabled,
-                                onChanged: (v) async {
-                                  setState(() => _enabled = v);
-                                  await _apply();
-                                },
-                                activeColor: AppColors.accent,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        if (_enabled) ...[
-                          const SizedBox(height: 18),
-
-                          const _SectionLabel(label: 'INTERVAL'),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 10,
-                            children: [
-                              for (final h in _intervalOptions)
-                                _IntervalChip(
-                                  hours: h,
-                                  isActive: _intervalHours == h,
-                                  onTap: () async {
-                                    setState(() => _intervalHours = h);
-                                    await _apply();
-                                  },
-                                ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 18),
-
-                          const _SectionLabel(label: 'ACTIVE WINDOW'),
-                          const SizedBox(height: 8),
-                          GlassCard(
-                            color: AppColors.surface.withOpacity(0.4),
-                            borderColor: AppColors.borderLight,
-                            padding: EdgeInsets.zero,
-                            child: Column(
-                              children: [
-                                _TimeRow(
-                                  label: 'Starts at',
-                                  value: _formatHour(_start),
-                                  onTap: _pickStartHour,
-                                ),
-                                Container(
-                                  height: 1,
-                                  color: AppColors.borderLight,
-                                ),
-                                _TimeRow(
-                                  label: 'Ends at',
-                                  value: _formatHour(_end),
-                                  onTap: _pickEndHour,
-                                ),
-                              ],
                             ),
-                          ),
+                            const SizedBox(height: 18),
 
-                          const SizedBox(height: 12),
-                          Text(
-                            _slotsPerDay > 0
-                                ? "You'll get $_slotsPerDay ${_slotsPerDay == 1 ? "affirmation" : "affirmations"} per day."
-                                : 'Adjust the window to schedule at least one slot.',
-                            style: const TextStyle(
-                              color: AppColors.textDim,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 28),
-                        const _SectionLabel(label: 'TRY IT NOW'),
-                        const SizedBox(height: 8),
-                        GlassCard(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0x1AE8945A),
-                              Color(0x14D4A574),
-                            ],
-                          ),
-                          borderColor: AppColors.accentBorder,
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.accentTranslucent,
-                                ),
-                                child: const Icon(
-                                  Icons.self_improvement,
-                                  color: AppColors.accent,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Run a timed affirmation',
+                            // Toggle
+                            GlassCard(
+                              color: AppColors.surface.withOpacity(0.5),
+                              borderColor: AppColors.borderLight,
+                              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                              child: Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'Send affirmation reminders',
                                       style: TextStyle(
                                         color: AppColors.textPrimary,
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    SizedBox(height: 2),
-                                    Text(
-                                      'A short pause that ends with a single affirmation.',
-                                      style: TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 12,
-                                        height: 1.5,
-                                      ),
+                                  ),
+                                  Switch(
+                                    value: _enabled,
+                                    onChanged: (v) async {
+                                      setState(() => _enabled = v);
+                                      await _apply();
+                                    },
+                                    activeColor: AppColors.accent,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            if (_enabled) ...[
+                              const SizedBox(height: 18),
+                              const _SectionLabel(label: 'INTERVAL'),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 10,
+                                children: [
+                                  for (final h in _intervalOptions)
+                                    _IntervalChip(
+                                      hours: h,
+                                      isActive: _intervalHours == h,
+                                      onTap: () async {
+                                        setState(() => _intervalHours = h);
+                                        await _apply();
+                                      },
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              const _SectionLabel(label: 'ACTIVE WINDOW'),
+                              const SizedBox(height: 8),
+                              GlassCard(
+                                color: AppColors.surface.withOpacity(0.4),
+                                borderColor: AppColors.borderLight,
+                                padding: EdgeInsets.zero,
+                                child: Column(
+                                  children: [
+                                    _TimeRow(
+                                      label: 'Starts at',
+                                      value: _formatHour(_start),
+                                      onTap: _pickStartHour,
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      color: AppColors.borderLight,
+                                    ),
+                                    _TimeRow(
+                                      label: 'Ends at',
+                                      value: _formatHour(_end),
+                                      onTap: _pickEndHour,
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: _openTimer,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.accent,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'Begin',
-                                    style: TextStyle(
-                                      color: AppColors.background,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _slotsPerDay > 0
+                                    ? "You'll get $_slotsPerDay ${_slotsPerDay == 1 ? "affirmation" : "affirmations"} per day."
+                                    : 'Adjust the window to schedule at least one slot.',
+                                style: const TextStyle(
+                                  color: AppColors.textDim,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
-                          ),
+
+                            const SizedBox(height: 28),
+                            const _SectionLabel(label: 'TRY IT NOW'),
+                            const SizedBox(height: 8),
+                            GlassCard(
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color(0x1AE8945A),
+                                  Color(0x14D4A574),
+                                ],
+                              ),
+                              borderColor: AppColors.accentBorder,
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.accentTranslucent,
+                                    ),
+                                    child: const Icon(
+                                      Icons.self_improvement,
+                                      color: AppColors.accent,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Run a timed affirmation',
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          'A short pause that ends with a single affirmation.',
+                                          style: TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: _openTimer,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Text(
+                                        'Begin',
+                                        style: TextStyle(
+                                          color: AppColors.background,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
             ),
           ],

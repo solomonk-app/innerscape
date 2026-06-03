@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -258,9 +259,8 @@ class _ReflectionTabState extends State<_ReflectionTab>
     await storage.addPromptCompletion(completion);
 
     AnalyticsService().logReflectionCompleted(
-      cadence: widget.cadence == ReflectionCadence.weekly
-          ? 'weekly'
-          : 'monthly',
+      cadence:
+          widget.cadence == ReflectionCadence.weekly ? 'weekly' : 'monthly',
       writtenInApp: writtenInApp,
     );
 
@@ -292,319 +292,325 @@ class _ReflectionTabState extends State<_ReflectionTab>
       ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
     final dateFormat = DateFormat.yMMMd().add_jm();
 
-    final periodLabel = widget.cadence == ReflectionCadence.weekly
-        ? 'THIS WEEK'
-        : 'THIS MONTH';
+    final periodLabel =
+        widget.cadence == ReflectionCadence.weekly ? 'THIS WEEK' : 'THIS MONTH';
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-      children: [
-        // Current prompt
-        GlassCard(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0x1AE8945A),
-              Color(0x14D4A574),
-            ],
-          ),
-          borderColor: AppColors.accentBorder,
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                periodLabel,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: AppColors.accent,
-                  letterSpacing: 2,
-                ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: kIsWeb ? 480 : double.infinity),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          children: [
+            // Current prompt
+            GlassCard(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0x1AE8945A),
+                  Color(0x14D4A574),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                prompt.title,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                prompt.prompt,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                  height: 1.6,
-                ),
-              ),
-              if (prompt.topics.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                const Text(
-                  'TRY WRITING ABOUT',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.textMuted,
-                    letterSpacing: 2,
+              borderColor: AppColors.accentBorder,
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    periodLabel,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.accent,
+                      letterSpacing: 2,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                ...prompt.topics.map(
-                  (t) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '•',
-                          style: TextStyle(
-                            color: AppColors.warmGold,
-                            fontSize: 14,
+                  const SizedBox(height: 8),
+                  Text(
+                    prompt.title,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    prompt.prompt,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                      height: 1.6,
+                    ),
+                  ),
+                  if (prompt.topics.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    const Text(
+                      'TRY WRITING ABOUT',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textMuted,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...prompt.topics.map(
+                      (t) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '•',
+                              style: TextStyle(
+                                color: AppColors.warmGold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                t,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 13,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 18),
+
+                  // Existing completion banner
+                  if (current != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.background.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.accentBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_outline,
+                            color: AppColors.accent,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              current.writtenInApp
+                                  ? 'Written in-app ${dateFormat.format(current.completedAt)}'
+                                  : 'Marked written on paper ${dateFormat.format(current.completedAt)}',
+                              style: const TextStyle(
+                                color: AppColors.accent,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (current.writtenInApp && current.text != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.background.withOpacity(0.35),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.borderLight),
+                        ),
+                        child: Text(
+                          current.text!,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            height: 1.5,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                  ],
+
+                  // Action area
+                  if (_isWriting) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.background.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.borderLight),
+                      ),
+                      child: TextField(
+                        controller: _textController,
+                        autofocus: true,
+                        maxLines: 8,
+                        minLines: 5,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          height: 1.6,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'Write here...',
+                          hintStyle: TextStyle(color: AppColors.textDim),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
                         Expanded(
-                          child: Text(
-                            t,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                              height: 1.5,
+                          child: SizedBox(
+                            height: 46,
+                            child: OutlinedButton(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () => setState(() => _isWriting = false),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                    color: AppColors.borderLight),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Back',
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: SizedBox(
+                            height: 46,
+                            child: ElevatedButton(
+                              onPressed: _isSaving
+                                  ? null
+                                  : () => _complete(writtenInApp: true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accent,
+                                foregroundColor: AppColors.background,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                _isSaving ? 'Saving...' : 'Save reflection',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 18),
-
-              // Existing completion banner
-              if (current != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.background.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.accentBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle_outline,
-                        color: AppColors.accent,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          current.writtenInApp
-                              ? 'Written in-app ${dateFormat.format(current.completedAt)}'
-                              : 'Marked written on paper ${dateFormat.format(current.completedAt)}',
+                  ] else ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        onPressed: _isSaving
+                            ? null
+                            : () => _complete(writtenInApp: false),
+                        icon: const Icon(Icons.check, size: 18),
+                        label: Text(
+                          current == null
+                              ? 'I wrote it on paper'
+                              : 'Write again on paper',
                           style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 12,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (current.writtenInApp && current.text != null) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.background.withOpacity(0.35),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: Text(
-                      current.text!,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 14),
-              ],
-
-              // Action area
-              if (_isWriting) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.background.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.borderLight),
-                  ),
-                  child: TextField(
-                    controller: _textController,
-                    autofocus: true,
-                    maxLines: 8,
-                    minLines: 5,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      height: 1.6,
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: 'Write here...',
-                      hintStyle: TextStyle(color: AppColors.textDim),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 46,
-                        child: OutlinedButton(
-                          onPressed: _isSaving
-                              ? null
-                              : () => setState(() => _isWriting = false),
-                          style: OutlinedButton.styleFrom(
-                            side:
-                                const BorderSide(color: AppColors.borderLight),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Back',
-                            style: TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 13,
-                            ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: AppColors.background,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: SizedBox(
-                        height: 46,
-                        child: ElevatedButton(
-                          onPressed: _isSaving
-                              ? null
-                              : () => _complete(writtenInApp: true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
-                            foregroundColor: AppColors.background,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: OutlinedButton.icon(
+                        onPressed: _isSaving
+                            ? null
+                            : () => setState(() => _isWriting = true),
+                        icon: const Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: AppColors.textPrimary,
+                        ),
+                        label: Text(
+                          current == null
+                              ? 'Write in-app'
+                              : 'Write again in-app',
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
                           ),
-                          child: Text(
-                            _isSaving ? 'Saving...' : 'Save reflection',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.borderLight),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                       ),
                     ),
                   ],
-                ),
-              ] else ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton.icon(
-                    onPressed: _isSaving
-                        ? null
-                        : () => _complete(writtenInApp: false),
-                    icon: const Icon(Icons.check, size: 18),
-                    label: Text(
-                      current == null
-                          ? 'I wrote it on paper'
-                          : 'Write again on paper',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: AppColors.background,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: OutlinedButton.icon(
-                    onPressed: _isSaving
-                        ? null
-                        : () => setState(() => _isWriting = true),
-                    icon: const Icon(
-                      Icons.edit_outlined,
-                      size: 18,
-                      color: AppColors.textPrimary,
-                    ),
-                    label: Text(
-                      current == null ? 'Write in-app' : 'Write again in-app',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.borderLight),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-
-        // Past reflections
-        if (past.isNotEmpty) ...[
-          const SizedBox(height: 28),
-          const Text(
-            'PAST REFLECTIONS',
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.textMuted,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          for (final c in past)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _PastReflectionCard(
-                completion: c,
-                dateLabel: dateFormat.format(c.completedAt),
+                ],
               ),
             ),
-        ],
-      ],
+
+            // Past reflections
+            if (past.isNotEmpty) ...[
+              const SizedBox(height: 28),
+              const Text(
+                'PAST REFLECTIONS',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textMuted,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 10),
+              for (final c in past)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _PastReflectionCard(
+                    completion: c,
+                    dateLabel: dateFormat.format(c.completedAt),
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -640,8 +646,7 @@ class _PastReflectionCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: AppColors.accentTranslucent,
                   borderRadius: BorderRadius.circular(8),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../constants/journal_ideas.dart';
 import '../models/prompt_completion.dart';
@@ -97,60 +98,79 @@ class _JournalIdeasScreenState extends State<JournalIdeasScreen> {
               ),
             ),
 
-            // Subtitle
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 4, 24, 16),
-              child: Text(
-                'Pick a prompt. Write it in your notebook — or in-app.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textDim,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-
-            // Category filter chips
-            SizedBox(
-              height: 36,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  _CategoryChip(
-                    label: 'All',
-                    emoji: '\u{2728}',
-                    isActive: _selectedCategory == null,
-                    onTap: () => setState(() => _selectedCategory = null),
-                  ),
-                  for (final cat in JournalCategory.values)
-                    _CategoryChip(
-                      label: journalCategoryLabel(cat),
-                      emoji: journalCategoryEmoji(cat),
-                      isActive: _selectedCategory == cat,
-                      onTap: () => setState(() => _selectedCategory = cat),
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Idea list
+            // Centered content below the header (web: max 480 wide)
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                itemCount: _visibleIdeas.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (ctx, i) {
-                  final idea = _visibleIdeas[i];
-                  final completed = _completedKeys.contains(_promptKey(idea));
-                  return _IdeaCard(
-                    idea: idea,
-                    completed: completed,
-                    onTap: () => _openIdea(idea),
-                  );
-                },
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: kIsWeb ? 480 : double.infinity,
+                  ),
+                  child: Column(
+                    children: [
+                      // Subtitle
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(24, 4, 24, 16),
+                        child: Text(
+                          'Pick a prompt. Write it in your notebook — or in-app.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.textDim,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
+                      // Category filter chips
+                      SizedBox(
+                        height: 36,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          children: [
+                            _CategoryChip(
+                              label: 'All',
+                              emoji: '\u{2728}',
+                              isActive: _selectedCategory == null,
+                              onTap: () =>
+                                  setState(() => _selectedCategory = null),
+                            ),
+                            for (final cat in JournalCategory.values)
+                              _CategoryChip(
+                                label: journalCategoryLabel(cat),
+                                emoji: journalCategoryEmoji(cat),
+                                isActive: _selectedCategory == cat,
+                                onTap: () =>
+                                    setState(() => _selectedCategory = cat),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Idea list
+                      Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                          itemCount: _visibleIdeas.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (ctx, i) {
+                            final idea = _visibleIdeas[i];
+                            final completed = _completedKeys.contains(
+                              _promptKey(idea),
+                            );
+                            return _IdeaCard(
+                              idea: idea,
+                              completed: completed,
+                              onTap: () => _openIdea(idea),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -192,9 +212,8 @@ class _CategoryChip extends StatelessWidget {
                   : AppColors.surface.withOpacity(0.4),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isActive
-                    ? AppColors.accentBorder
-                    : AppColors.borderLight,
+                color:
+                    isActive ? AppColors.accentBorder : AppColors.borderLight,
               ),
             ),
             child: Row(
@@ -206,9 +225,7 @@ class _CategoryChip extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isActive
-                        ? AppColors.accent
-                        : AppColors.textMuted,
+                    color: isActive ? AppColors.accent : AppColors.textMuted,
                     letterSpacing: 0.3,
                   ),
                 ),
@@ -242,9 +259,8 @@ class _IdeaCard extends StatelessWidget {
         onTap: onTap,
         child: GlassCard(
           color: AppColors.surface.withOpacity(0.5),
-          borderColor: completed
-              ? AppColors.accentBorder
-              : AppColors.borderLight,
+          borderColor:
+              completed ? AppColors.accentBorder : AppColors.borderLight,
           padding: const EdgeInsets.all(16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

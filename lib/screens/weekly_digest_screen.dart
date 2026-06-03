@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:animate_do/animate_do.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,7 +29,8 @@ class _WeeklyDigestScreenState extends State<WeeklyDigestScreen> {
   void initState() {
     super.initState();
     AnalyticsService().logWeeklyDigestView();
-    SharedPreferences.getInstance().then((p) => p.setBool('digest_viewed', true));
+    SharedPreferences.getInstance()
+        .then((p) => p.setBool('digest_viewed', true));
     _loadDigests();
   }
 
@@ -37,14 +39,20 @@ class _WeeklyDigestScreenState extends State<WeeklyDigestScreen> {
     final digests = await storage.getDigests();
     setState(() {
       _digests = digests;
-      _selectedDigest = widget.initialDigest ?? (digests.isNotEmpty ? digests.first : null);
+      _selectedDigest =
+          widget.initialDigest ?? (digests.isNotEmpty ? digests.first : null);
       _isLoading = false;
     });
   }
 
   static const _dayNames = {
-    1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
-    4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday',
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday',
   };
 
   @override
@@ -110,9 +118,17 @@ class _WeeklyDigestScreenState extends State<WeeklyDigestScreen> {
               )
             else
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  child: _buildDigestContent(context, _selectedDigest!, dateFormat),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: kIsWeb ? 480 : double.infinity),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
+                      child: _buildDigestContent(
+                          context, _selectedDigest!, dateFormat),
+                    ),
+                  ),
                 ),
               ),
 
@@ -126,42 +142,48 @@ class _WeeklyDigestScreenState extends State<WeeklyDigestScreen> {
                     top: BorderSide(color: AppColors.borderLight),
                   ),
                 ),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _digests.length,
-                  itemBuilder: (ctx, idx) {
-                    final d = _digests[idx];
-                    final isSelected = d.id == _selectedDigest?.id;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedDigest = d),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.accentTranslucent
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.accentBorder
-                                : AppColors.borderLight,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxWidth: kIsWeb ? 480 : double.infinity),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _digests.length,
+                      itemBuilder: (ctx, idx) {
+                        final d = _digests[idx];
+                        final isSelected = d.id == _selectedDigest?.id;
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedDigest = d),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.accentTranslucent
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.accentBorder
+                                    : AppColors.borderLight,
+                              ),
+                            ),
+                            child: Text(
+                              '${dateFormat.format(d.weekStart)} - ${dateFormat.format(d.weekEnd)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isSelected
+                                    ? AppColors.accent
+                                    : AppColors.textMuted,
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          '${dateFormat.format(d.weekStart)} - ${dateFormat.format(d.weekEnd)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isSelected
-                                ? AppColors.accent
-                                : AppColors.textMuted,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
 
