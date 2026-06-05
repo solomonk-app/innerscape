@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class AiService {
   static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY');
   static const String apiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
   static Uri get _effectiveUri {
     if (kIsWeb) {
@@ -193,7 +193,10 @@ class AiService {
             'parts': [{'text': userMessage}]
           }
         ],
-        'generationConfig': {'maxOutputTokens': 150},
+        'generationConfig': {
+          'maxOutputTokens': 150,
+          'thinkingConfig': {'thinkingBudget': 0},
+        },
       }),
     );
 
@@ -231,6 +234,7 @@ class AiService {
           ],
           'generationConfig': {
             'maxOutputTokens': 300,
+            'thinkingConfig': {'thinkingBudget': 0},
           },
         }),
       );
@@ -272,6 +276,7 @@ class AiService {
           'contents': contents,
           'generationConfig': {
             'maxOutputTokens': 400,
+            'thinkingConfig': {'thinkingBudget': 0},
           },
         }),
       );

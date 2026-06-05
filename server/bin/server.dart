@@ -16,7 +16,7 @@ void main() async {
   final port = int.parse(Platform.environment['PORT'] ?? '8080');
 
   const geminiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
   final router = Router();
 
